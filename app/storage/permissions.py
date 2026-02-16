@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 
-class CompanyPermission(permissions.BasePermission):
+class StoragePermission(permissions.BasePermission):
     """
     Allow access only to company-owner
     """

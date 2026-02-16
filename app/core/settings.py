@@ -38,9 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'authenticate.apps.AuthenticateConfig',
-    'drf_yasg',
     'companies',
+    'storage',
     'rest_framework',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -54,12 +55,20 @@ MIDDLEWARE = [
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Your Project API',
+    'DESCRIPTION': 'Your project description',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 ROOT_URLCONF = 'core.urls'
@@ -114,15 +123,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SWAGGER_SETTINGS = {
-   'SECURITY_DEFINITIONS': {
-      'Token': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header'
-      }
-   }
-}
 
 
 # Internationalization

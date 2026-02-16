@@ -12,7 +12,7 @@ class CompanySerializer(serializers.ModelSerializer):
         user = self.context['request'].user
 
         if user.is_company_owner:
-            raise serializers.ValidationError('User already owns this company')
+            raise serializers.ValidationError('User already owns a company')
 
         company = Company.objects.create(**validated_data)
         user.company = company
@@ -20,3 +20,6 @@ class CompanySerializer(serializers.ModelSerializer):
         user.save()
 
         return company
+
+
+

@@ -15,3 +15,6 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+
+class AttachUserToCompanySerializer(serializers.Serializer):
+    email = serializers.EmailField()
