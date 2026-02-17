@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics, permissions
 from .models import Supplier
 from .serializers import SupplierSerializer
+from .permissions import SupplierPermission
 from companies.models import Company
 
 class SupplierCreateView(generics.CreateAPIView):
@@ -9,13 +10,13 @@ class SupplierCreateView(generics.CreateAPIView):
 
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, SupplierPermission]
 
 class SupplierDetailView(generics.RetrieveAPIView):
     """Review supplier's detail"""
 
     serializer_class = SupplierSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, SupplierPermission]
 
     def get_queryset(self):
         return Supplier.objects.filter(company=self.request.user.company)
@@ -25,7 +26,7 @@ class SupplierDeleteView(generics.DestroyAPIView):
     """Delete supplier"""
 
     serializer_class = SupplierSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, SupplierPermission]
 
     def get_queryset(self):
         return Supplier.objects.filter(company=self.request.user.company)
@@ -34,7 +35,7 @@ class SupplierDeleteView(generics.DestroyAPIView):
 class SupplierEditView(generics.UpdateAPIView):
     """Edit supplier's detail"""
     serializer_class = SupplierSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, SupplierPermission]
 
     def get_queryset(self):
         return Supplier.objects.filter(company=self.request.user.company)
