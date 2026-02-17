@@ -6,30 +6,38 @@ from .permissions import CompanyPermission
 from .serializers import CompanySerializer
 
 class CompanyCreateView(generics.CreateAPIView):
+    """Create new company"""
+
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
     permission_classes = [permissions.IsAuthenticated, CompanyPermission]
 
 class CompanyDetailView(generics.RetrieveAPIView):
+    """Review company detail"""
+
     serializer_class = CompanySerializer
     permission_classes = [permissions.IsAuthenticated, CompanyPermission]
 
     def get_queryset(self):
-        return Company.objects.filter(company=self.request.user.company)
+        return Company.objects.filter(id=self.request.user.company_id)
 
 
 class CompanyDeleteView(generics.DestroyAPIView):
+    """Delete company"""
+
     serializer_class = CompanySerializer
     permission_classes = [permissions.IsAuthenticated, CompanyPermission]
 
     def get_queryset(self):
-        return Company.objects.filter(company=self.request.user.company)
+        return Company.objects.filter(id=self.request.user.company_id)
 
 
 class CompanyEditView(generics.UpdateAPIView):
+    """Edit company details"""
+
     serializer_class =  CompanySerializer
     permission_classes = [permissions.IsAuthenticated, CompanyPermission]
 
     def get_queryset(self):
-        return Company.objects.filter(company=self.request.user.company)
+        return Company.objects.filter(id=self.request.user.company_id)
 

@@ -20,8 +20,12 @@ class AttachUserToCompanyView(generics.GenericAPIView):
     serializer_class = AttachUserToCompanySerializer
 
     def post(self, request):
+        """Assign user to a company as an employee. Only company owner has rights"""
+
         owner = request.user
-        return Response({'error': 'Only company owner can add employees'}, status=status.HTTP_403_FORBIDDEN)
+
+        if not owner.is_company_owner:
+            return Response({'error': 'Only company owner can add employees'}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

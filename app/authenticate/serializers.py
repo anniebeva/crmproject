@@ -17,4 +17,5 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 class AttachUserToCompanySerializer(serializers.Serializer):
+    """Assign user to a specific company as an employee"""
     email = serializers.EmailField()

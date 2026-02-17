@@ -9,10 +9,6 @@ class Company(models.Model):
     pub_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        permissions = [
-            ('can_add_company', 'Can add companies')
-        ]
-
         verbose_name = 'Company'
         verbose_name_plural = 'Companies'
 

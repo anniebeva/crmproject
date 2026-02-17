@@ -7,11 +7,15 @@ from companies.models import Company
 
 
 class StorageCreateView(generics.CreateAPIView):
+    """Create new storage"""
+
     queryset = Storage.objects.all()
     serializer_class = StorageSerializer
     permission_classes = [permissions.IsAuthenticated, StoragePermission]
 
 class StorageDetailView(generics.RetrieveAPIView):
+    """Review storage detail"""
+
     serializer_class = StorageSerializer
     permission_classes = [permissions.IsAuthenticated, StoragePermission]
 
@@ -20,6 +24,8 @@ class StorageDetailView(generics.RetrieveAPIView):
 
 
 class StorageDeleteView(generics.DestroyAPIView):
+    """Delete storage"""
+
     serializer_class = StorageSerializer
     permission_classes = [permissions.IsAuthenticated, StoragePermission]
 
@@ -28,6 +34,8 @@ class StorageDeleteView(generics.DestroyAPIView):
 
 
 class StorageEditView(generics.UpdateAPIView):
+    """Edit storage detail"""
+
     serializer_class =  StorageSerializer
     permission_classes = [permissions.IsAuthenticated, StoragePermission]
 

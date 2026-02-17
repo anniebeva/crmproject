@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'authenticate.apps.AuthenticateConfig',
     'companies',
     'storage',
+    'suppliers',
+    'supplies',
     'rest_framework',
     'drf_spectacular',
 ]
