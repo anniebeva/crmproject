@@ -14,6 +14,9 @@ class CompanySerializer(serializers.ModelSerializer):
         if user.is_company_owner:
             raise serializers.ValidationError('User already owns a company')
 
+        if user.company is not None:
+            raise serializers.ValidationError('User is already attached to a company')
+
         company = Company.objects.create(**validated_data)
         user.company = company
         user.is_company_owner = True

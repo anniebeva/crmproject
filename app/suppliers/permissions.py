@@ -5,6 +5,4 @@ class SupplierPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         user = request.user
-
-        if user.is_company_owner or user.company is not None:
-            return True
+        return obj.company == user.company

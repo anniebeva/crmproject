@@ -13,10 +13,10 @@ class CompanyCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated, CompanyPermission]
 
 class CompanyDetailView(generics.RetrieveAPIView):
-    """Review company detail"""
+    """Review company detail. Available to all authenticated users"""
 
     serializer_class = CompanySerializer
-    permission_classes = [permissions.IsAuthenticated, CompanyPermission]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Company.objects.filter(id=self.request.user.company_id)

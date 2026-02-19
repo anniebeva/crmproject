@@ -45,3 +45,5 @@ class AttachUserToCompanyView(generics.GenericAPIView):
 
         user.company = owner.company
         user.save()
+
+        return Response({'detail': 'User attached successfully'}, status=status.HTTP_200_OK)
