@@ -18,8 +18,7 @@ class CompanyDetailView(generics.RetrieveAPIView):
     serializer_class = CompanySerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        return Company.objects.filter(id=self.request.user.company_id)
+    queryset = Company.objects.all()
 
 
 class CompanyDeleteView(generics.DestroyAPIView):
