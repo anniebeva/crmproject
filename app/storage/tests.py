@@ -9,6 +9,7 @@ from utils import create_owner, create_employee
 
 # Create storage POST
 
+@pytest.mark.django_db
 def test_create_storage_owner_success(api_client, owner_user):
     """Owner can create a storage for their company"""
     api_client.force_authenticate(user=owner_user)
@@ -95,7 +96,7 @@ def test_view_storage_diff_employee_error(api_client, owner_with_storage):
     url = reverse('storage-detail', args=[owner_with_storage.company.id])
     response = api_client.get(url)
 
-    assert response.status_code == 404
+    assert response.status_code == 403
 
 
 @pytest.mark.django_db

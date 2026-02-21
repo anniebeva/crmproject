@@ -18,9 +18,8 @@ class StorageDetailView(generics.RetrieveAPIView):
 
     serializer_class = StorageSerializer
     permission_classes = [permissions.IsAuthenticated, StoragePermission]
+    queryset = Storage.objects.all()
 
-    def get_queryset(self):
-        return Storage.objects.filter(company=self.request.user.company)
 
 
 class StorageDeleteView(generics.DestroyAPIView):
@@ -28,9 +27,7 @@ class StorageDeleteView(generics.DestroyAPIView):
 
     serializer_class = StorageSerializer
     permission_classes = [permissions.IsAuthenticated, StoragePermission]
-
-    def get_queryset(self):
-        return Storage.objects.filter(company=self.request.user.company)
+    queryset = Storage.objects.all()
 
 
 class StorageEditView(generics.UpdateAPIView):
@@ -38,6 +35,4 @@ class StorageEditView(generics.UpdateAPIView):
 
     serializer_class =  StorageSerializer
     permission_classes = [permissions.IsAuthenticated, StoragePermission]
-
-    def get_queryset(self):
-        return Storage.objects.filter(company=self.request.user.company)
+    queryset = Storage.objects.all()

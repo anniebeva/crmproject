@@ -1,8 +1,12 @@
 from rest_framework.test import APIClient
 import pytest
+import datetime
+
 from authenticate.models import User
 from companies.models import Company
 from storage.models import Storage
+from suppliers.models import Supplier
+from supplies.models import Supply
 from utils import create_employee, create_owner
 
 #Fixtures
@@ -63,3 +67,54 @@ def employee_with_storage(employee_user):
         address='Empl_street 123, City 13092'
     )
     return employee_user
+
+@pytest.fixture
+def owner_with_supplier(owner_user):
+    """create supplier for test owner"""
+
+    Supplier.objects.create(
+        company=owner_user.company,
+        title='TestSupplier1',
+        INN='999999999999'
+    )
+
+    return owner_user
+
+
+@pytest.fixture
+def employee_with_supplier(employee_user):
+    """create supplier for test employee"""
+
+    Supplier.objects.create(
+        company=employee_user.company,
+        title='TestSupplier1',
+        INN='999999999999'
+    )
+
+    return employee_user
+
+
+@pytest.fixture
+def owner_with_supply(owner_with_supplier):
+    """create supply for test owner"""
+    supplier = owner_with_supplier.company.suppliers.first()
+
+    Supply.objects.create(
+        supplier=supplier,
+        delivery_date=datetime.date.today()
+    )
+
+    return owner_with_supplier
+
+
+@pytest.fixture
+def employee_with_supply(employee_with_supplier):
+    """create supply for test employee"""
+    supplier = employee_with_supplier.company.suppliers.first()
+
+    Supply.objects.create(
+        supplier=supplier,
+        delivery_date=datetime.date.today()
+    )
+
+    return employee_with_supplier

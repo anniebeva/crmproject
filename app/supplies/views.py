@@ -16,24 +16,21 @@ class SupplyDetailVIew(generics.RetrieveAPIView):
 
     serializer_class = SupplySerializer
     permission_classes = [permissions.IsAuthenticated, SupplyPermissions]
+    queryset = Supply.objects.all()
 
-    def get_queryset(self):
-        return Supply.objects.filter(supplier__company=self.request.user.company)
 
 class SupplyEditView(generics.UpdateAPIView):
     """Edit supply's detail"""
 
     serializer_class = SupplySerializer
     permission_classes = [permissions.IsAuthenticated, SupplyPermissions]
+    queryset = Supply.objects.all()
 
-    def get_queryset(self):
-        return Supply.objects.filter(supplier__company=self.request.user.company)
 
 class SupplyDeleteView(generics.DestroyAPIView):
     """Delete supply's detail"""
 
     serializer_class = SupplySerializer
     permission_classes = [permissions.IsAuthenticated, SupplyPermissions]
+    queryset = Supply.objects.all()
 
-    def get_queryset(self):
-        return Supply.objects.filter(supplier__company=self.request.user.company)
