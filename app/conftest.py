@@ -7,6 +7,7 @@ from companies.models import Company
 from storage.models import Storage
 from suppliers.models import Supplier
 from supplies.models import Supply
+from products.models import Product
 from utils import create_employee, create_owner
 
 #Fixtures
@@ -45,6 +46,20 @@ def employee_user(db):
                                company_title='TestEmployeeCompany',
                                inn='1234567891013')
     return employee
+
+@pytest.fixture
+def foreign_company_employee(db):
+    """Another employee for testing access"""
+
+    foreign_employee = create_employee(
+        user_model=User,
+        comp_model=Company,
+        username='test_foreign_employee',
+        email='test_employee_foreign@test.com',
+        company_title='TestForeignComp',
+        inn='123456789108')
+
+    return foreign_employee
 
 
 @pytest.fixture
@@ -118,3 +133,32 @@ def employee_with_supply(employee_with_supplier):
     )
 
     return employee_with_supplier
+
+
+@pytest.fixture
+def owner_with_product(owner_with_storage):
+    """Owner with one product for testing edit/view/delete"""
+    from products.models import Product
+
+    Product.objects.create(
+        title='Test Product',
+        purchase_price=100.0,
+        sale_price=150.0,
+        storage=owner_with_storage.company.storage
+    )
+
+    return owner_with_storage
+
+@pytest.fixture
+def employee_with_product(employee_with_storage):
+    """Owner with one product for testing edit/view/delete"""
+    from products.models import Product
+
+    Product.objects.create(
+        title='Test Product',
+        purchase_price=100.0,
+        sale_price=150.0,
+        storage=employee_with_storage.company.storage
+    )
+
+    return employee_with_storage

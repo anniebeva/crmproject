@@ -147,7 +147,6 @@ def test_delete_company_employee_error(api_client, employee_user):
     assert  response.status_code == 403
 
 
-
 @pytest.mark.django_db
 def test_delete_company_unauthorized_error(api_client, owner_user):
     """Error: unauthorized user tries to delete a company"""

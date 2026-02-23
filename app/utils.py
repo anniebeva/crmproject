@@ -19,3 +19,5 @@ def create_employee(user_model, comp_model, username, email, company_title, inn)
     user.save()
 
     return user
+
+

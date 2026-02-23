@@ -4,7 +4,6 @@ from django.urls import reverse
 from authenticate.models import User
 from companies.models import Company
 from .models import Supplier
-from utils import create_owner, create_employee
 
 
 #Create POST
@@ -36,18 +35,10 @@ def test_create_supplier_employee_success(api_client, employee_user):
     assert response.status_code == 201
 
 @pytest.mark.django_db
-def test_create_supplier_diff_employee_error(api_client, owner_with_supplier):
+def test_create_supplier_diff_employee_error(api_client, owner_with_supplier, foreign_company_employee):
     """Error: Employee of a different company cannot create a supplier"""
 
-    new_employee = create_employee(
-        user_model=User,
-        comp_model=Company,
-        username='test_employee_supplier',
-        email='test_employee_supplier@test.com',
-        company_title='TestSupplierComp',
-        inn='123456789108')
-
-    api_client.force_authenticate(user=new_employee)
+    api_client.force_authenticate(user=foreign_company_employee)
 
     url = reverse('supplier-create')
     data = {'company': owner_with_supplier.company.id,
@@ -99,21 +90,12 @@ def test_view_supplier_employee_success(api_client, employee_with_supplier):
     assert response.data['company_id'] == employee_with_supplier.company.id
 
 @pytest.mark.django_db
-def test_view_supplier_diff_employee_error(api_client, owner_with_supplier):
+def test_view_supplier_diff_employee_error(api_client, owner_with_supplier, foreign_company_employee):
     """Error: employee of another company cannot view supplier detail"""
 
     supplier = owner_with_supplier.company.suppliers.first()
 
-    new_employee = create_employee(
-        user_model=User,
-        comp_model=Company,
-        username='other_emp',
-        email='other_emp@test.com',
-        company_title='OtherCompany',
-        inn='987654321001'
-    )
-
-    api_client.force_authenticate(user=new_employee)
+    api_client.force_authenticate(user=foreign_company_employee)
 
     url = reverse('supplier-detail', args=[supplier.id])
     response = api_client.get(url)
@@ -170,18 +152,10 @@ def test_edit_supplier_employee_success(api_client, employee_with_supplier):
     assert supplier.INN == '888888888888'
 
 @pytest.mark.django_db
-def test_edit_supplier_diff_employee_error(api_client, owner_with_supplier):
+def test_edit_supplier_diff_employee_error(api_client, owner_with_supplier, foreign_company_employee):
     """Error: employee of another company cannot edit supplier detail"""
 
-    new_employee = create_employee(
-        user_model=User,
-        comp_model=Company,
-        username='test_employee_supplier',
-        email='test_employee_supplier@test.com',
-        company_title='TestSupplierComp',
-        inn='123456789106')
-
-    api_client.force_authenticate(user=new_employee)
+    api_client.force_authenticate(user=foreign_company_employee)
 
     supplier = owner_with_supplier.company.suppliers.first()
     url = reverse('supplier-edit', args=[supplier.id])
@@ -240,21 +214,12 @@ def test_delete_supplier_employee_success(api_client, employee_with_supplier):
     assert not Supplier.objects.filter(id=supplier.id).exists()
 
 @pytest.mark.django_db
-def test_delete_supplier_diff_employee_error(api_client, owner_with_supplier):
+def test_delete_supplier_diff_employee_error(api_client, owner_with_supplier, foreign_company_employee):
     """Error: Employee of another company cannot delete supplier"""
 
     supplier = owner_with_supplier.company.suppliers.first()
 
-    new_employee = create_employee(
-        user_model=User,
-        comp_model=Company,
-        username='other_emp',
-        email='other_emp@test.com',
-        company_title='OtherCompany',
-        inn='987654321001'
-    )
-
-    api_client.force_authenticate(user=new_employee)
+    api_client.force_authenticate(user=foreign_company_employee)
 
     url = reverse('supplier-delete', args=[supplier.id])
     response = api_client.delete(url)

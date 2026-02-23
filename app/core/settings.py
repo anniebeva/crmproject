@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'storage',
     'suppliers',
     'supplies',
+    'products',
     'rest_framework',
     'drf_spectacular',
 ]

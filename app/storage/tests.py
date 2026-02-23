@@ -4,8 +4,6 @@ from django.urls import reverse
 from authenticate.models import User
 from companies.models import Company
 from .models import Storage
-from utils import create_owner, create_employee
-
 
 # Create storage POST
 
@@ -80,18 +78,10 @@ def test_view_storage_employee_success(api_client, employee_with_storage):
     assert response.data['company_id'] == employee_with_storage.company.id
 
 @pytest.mark.django_db
-def test_view_storage_diff_employee_error(api_client, owner_with_storage):
+def test_view_storage_diff_employee_error(api_client, owner_with_storage, foreign_company_employee):
     """Error: employee of another company cannot view storage"""
 
-    new_employee = create_employee(
-        user_model=User,
-        comp_model=Company,
-        username='test_employee_storage',
-        email='test_employee_storage@test.com',
-        company_title='TestStorgeComp',
-        inn='123456789106')
-
-    api_client.force_authenticate(user=new_employee)
+    api_client.force_authenticate(user=foreign_company_employee)
 
     url = reverse('storage-detail', args=[owner_with_storage.company.id])
     response = api_client.get(url)

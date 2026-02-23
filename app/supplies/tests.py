@@ -6,9 +6,6 @@ from authenticate.models import User
 from companies.models import Company
 from suppliers.models import Supplier
 from .models import Supply
-from utils import create_owner, create_employee
-
-#supplier, delivery_date
 
 # Create POST
 @pytest.mark.django_db
@@ -40,18 +37,10 @@ def test_create_supply_employee_success(api_client, employee_with_supplier):
     assert response.status_code == 201
 
 @pytest.mark.django_db
-def test_create_supply_diff_employee_error(api_client, owner_with_supplier):
+def test_create_supply_diff_employee_error(api_client, owner_with_supplier, foreign_company_employee):
     """Error: Employee of a different company cannot create a supply"""
 
-    new_employee = create_employee(
-        user_model=User,
-        comp_model=Company,
-        username='test_employee_supplier',
-        email='test_employee_supplier@test.com',
-        company_title='TestSupplierComp',
-        inn='123456789108')
-
-    api_client.force_authenticate(user=new_employee)
+    api_client.force_authenticate(user=foreign_company_employee)
     supplier = owner_with_supplier.company.suppliers.first()
 
     url = reverse('supply-create')
@@ -130,18 +119,10 @@ def test_view_supply_employee_success(api_client, employee_with_supply):
     assert response.data['supplier'] == supplier.id
 
 @pytest.mark.django_db
-def test_view_supply_diff_employee_error(api_client, owner_with_supply):
+def test_view_supply_diff_employee_error(api_client, owner_with_supply, foreign_company_employee):
     """Error: Employee of a different company cannot view a supply"""
 
-    new_employee = create_employee(
-        user_model=User,
-        comp_model=Company,
-        username='test_employee_supplier',
-        email='test_employee_supplier@test.com',
-        company_title='TestSupplierComp',
-        inn='123456789108')
-
-    api_client.force_authenticate(user=new_employee)
+    api_client.force_authenticate(user=foreign_company_employee)
     supplier = owner_with_supply.company.suppliers.first()
     supply = supplier.supplies.first()
 
@@ -202,18 +183,10 @@ def test_edit_supply_empoyee_success(api_client, employee_with_supply):
 
 
 @pytest.mark.django_db
-def test_edit_supply_diff_employee_error(api_client, owner_with_supply):
+def test_edit_supply_diff_employee_error(api_client, owner_with_supply, foreign_company_employee):
     """Error: Employee of a different company cannot edit a supply"""
 
-    new_employee = create_employee(
-        user_model=User,
-        comp_model=Company,
-        username='test_employee_supplier',
-        email='test_employee_supplier@test.com',
-        company_title='TestSupplierComp',
-        inn='123456789108')
-
-    api_client.force_authenticate(user=new_employee)
+    api_client.force_authenticate(user=foreign_company_employee)
     supplier = owner_with_supply.company.suppliers.first()
     supply = supplier.supplies.first()
 
@@ -259,7 +232,7 @@ def test_supply_edit_invalid_date_error(api_client, owner_with_supply):
     assert 'delivery_date' in response.data
 
 @pytest.mark.django_db
-def test_edit_supply_diff_supplier_error(api_client, owner_with_supply):
+def test_edit_supply_diff_supplier_error(api_client, owner_with_supply, foreign_company_employee):
     """Error: Cannot change supply supplier to supplier from another company"""
 
     api_client.force_authenticate(user=owner_with_supply)
@@ -267,15 +240,8 @@ def test_edit_supply_diff_supplier_error(api_client, owner_with_supply):
     current_supplier = owner_with_supply.company.suppliers.first()
     supply = current_supplier.supplies.first()
 
-    new_employee = create_employee(
-        user_model=User,
-        comp_model=Company,
-        username='test_employee_supplier',
-        email='test_employee_supplier@test.com',
-        company_title='TestSupplierComp',
-        inn='123456789108')
 
-    foreign_supplier = new_employee.company.suppliers.create(
+    foreign_supplier = foreign_company_employee.company.suppliers.create(
         title='ForeignSupplier',
         INN='111111111111'
     )
@@ -324,19 +290,10 @@ def test_delete_supply_employee_success(api_client, employee_with_supply):
     assert not Supply.objects.filter(id=supply.id).exists()
 
 @pytest.mark.django_db
-def test_delete_supply_diff_employee_error(api_client, owner_with_supply):
+def test_delete_supply_diff_employee_error(api_client, owner_with_supply, foreign_company_employee):
     """Error: Employee of a different company cannot delete a supply"""
 
-    new_employee = create_employee(
-        user_model=User,
-        comp_model=Company,
-        username='test_employee_supplier',
-        email='test_employee_supplier@test.com',
-        company_title='TestSupplierComp',
-        inn='123456789108'
-    )
-
-    api_client.force_authenticate(new_employee)
+    api_client.force_authenticate(foreign_company_employee)
     supplier = owner_with_supply.company.suppliers.first()
     supply = supplier.supplies.first()
 
