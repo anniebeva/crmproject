@@ -12,3 +12,6 @@ class Storage(models.Model):
     class Meta:
         verbose_name = 'Storage'
         verbose_name_plural = 'Storages'
+
+    def __str__(self):
+        return self.address

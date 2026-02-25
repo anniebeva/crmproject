@@ -5,8 +5,8 @@ from .models import Storage
 class StorageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Storage
-        read_only_fields = ['id']
-        fields = ['id', 'address', 'company_id']
+        read_only_fields = ['id', 'company']
+        fields = ['id', 'address', 'company']
 
     def create(self, validated_data):
         user = self.context['request'].user

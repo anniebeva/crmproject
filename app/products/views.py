@@ -12,23 +12,45 @@ class ProductCreateView(generics.CreateAPIView):
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated, ProductPermission]
 
+class ProductListView(generics.ListAPIView):
+    """View all products"""
+
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated, ProductPermission]
+
+    def get_queryset(self):
+        return Product.objects.filter(
+            storage__company=self.request.user.company
+        )
+
 class ProductDetailView(generics.RetrieveAPIView):
     """View Product details"""
 
-    queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated, ProductPermission]
+    def get_queryset(self):
+        return Product.objects.filter(
+            storage__company=self.request.user.company
+        )
 
 class ProductEditView(generics.UpdateAPIView):
     """Edit products detail"""
 
-    queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated, ProductPermission]
+
+    def get_queryset(self):
+        return Product.objects.filter(
+            storage__company=self.request.user.company
+        )
 
 class ProductDeleteView(generics.DestroyAPIView):
     """Delete product detail"""
 
-    queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated, ProductPermission]
+
+    def get_queryset(self):
+        return Product.objects.filter(
+            storage__company=self.request.user.company
+        )

@@ -5,8 +5,8 @@ from .models import Supplier
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
-        read_only_fields = ['id']
-        fields = ['id', 'company_id', 'title', 'INN']
+        read_only_fields = ['id', 'company']
+        fields = ['id', 'company', 'title', 'INN']
 
 
     def create(self, validated_data):

@@ -15,10 +15,9 @@ class CompanyCreateView(generics.CreateAPIView):
 class CompanyDetailView(generics.RetrieveAPIView):
     """Review company detail. Available to all authenticated users"""
 
+    queryset = Company.objects.all()
     serializer_class = CompanySerializer
     permission_classes = [permissions.IsAuthenticated]
-
-    queryset = Company.objects.all()
 
 
 class CompanyDeleteView(generics.DestroyAPIView):

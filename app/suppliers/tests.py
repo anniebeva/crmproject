@@ -14,8 +14,7 @@ def test_create_supplier_owner_success(api_client, owner_user):
 
     api_client.force_authenticate(user=owner_user)
     url = reverse('supplier-create')
-    data = {'company': owner_user.company.id,
-            'title': 'OwnerSupplierTest',
+    data = {'title': 'OwnerSupplierTest',
             'INN': '888888888888'}
     response = api_client.post(url, data, format='json')
 
@@ -27,36 +26,55 @@ def test_create_supplier_employee_success(api_client, employee_user):
 
     api_client.force_authenticate(user=employee_user)
     url=reverse('supplier-create')
-    data = {'company': employee_user.company.id,
-            'title': 'EmployeeSupplierTest',
+    data = {'title': 'EmployeeSupplierTest',
             'INN': '888888888889'}
     response = api_client.post(url, data, format='json')
 
     assert response.status_code == 201
 
-@pytest.mark.django_db
-def test_create_supplier_diff_employee_error(api_client, owner_with_supplier, foreign_company_employee):
-    """Error: Employee of a different company cannot create a supplier"""
-
-    api_client.force_authenticate(user=foreign_company_employee)
-
-    url = reverse('supplier-create')
-    data = {'company': owner_with_supplier.company.id,
-        'title': 'EmployeeSupplierTest',
-        'INN': '888888888889'}
-    response = api_client.post(url, data, format='json')
-
-    assert response.status_code == 403
 
 @pytest.mark.django_db
 def test_create_supplier_unathorized_error(api_client, owner_user):
     """Error: Unauthorized user cannot create a supplier"""
 
     url = reverse('supplier-create')
-    data = {'company': owner_user.company.id,
-            'title': 'OwnerSupplierTest',
+    data = {'title': 'OwnerSupplierTest',
             'INN': '888888888888'}
     response = api_client.post(url, data, format='json')
+
+    assert response.status_code == 401
+
+# View list of suppliers GET
+
+@pytest.mark.django_db
+def test_list_suppliers_owner_success(api_client, owner_with_supplier):
+    """Owner can see list of suppliers"""
+
+    api_client.force_authenticate(user=owner_with_supplier)
+
+    url = reverse('suppliers-list')
+    response = api_client.get(url)
+
+    assert response.status_code == 200
+
+@pytest.mark.django_db
+def test_list_suppliers_employee_success(api_client, employee_with_supplier):
+    """Employee can see list of suppliers"""
+
+    api_client.force_authenticate(user=employee_with_supplier)
+
+    url = reverse('suppliers-list')
+    response = api_client.get(url)
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_view_product_unauthorized_error(api_client):
+    """Error: Unauthorized user cannot view products list"""
+
+    url = reverse('suppliers-list')
+    response = api_client.get(url)
 
     assert response.status_code == 401
 
@@ -68,12 +86,13 @@ def test_view_supplier_owner_success(api_client, owner_with_supplier):
 
     api_client.force_authenticate(user=owner_with_supplier)
     supplier = owner_with_supplier.company.suppliers.first()
+
     url = reverse('supplier-detail', args=[supplier.id])
     response = api_client.get(url)
 
     assert response.status_code == 200
     assert response.data['id'] == supplier.id
-    assert response.data['company_id'] == owner_with_supplier.company.id
+    assert response.data['company'] == owner_with_supplier.company.id
 
 
 @pytest.mark.django_db
@@ -82,12 +101,13 @@ def test_view_supplier_employee_success(api_client, employee_with_supplier):
 
     api_client.force_authenticate(user=employee_with_supplier)
     supplier = employee_with_supplier.company.suppliers.first()
+
     url = reverse('supplier-detail', args=[supplier.id])
     response = api_client.get(url)
 
     assert response.status_code == 200
     assert response.data['id'] == supplier.id
-    assert response.data['company_id'] == employee_with_supplier.company.id
+    assert response.data['company'] == employee_with_supplier.company.id
 
 @pytest.mark.django_db
 def test_view_supplier_diff_employee_error(api_client, owner_with_supplier, foreign_company_employee):
@@ -100,7 +120,7 @@ def test_view_supplier_diff_employee_error(api_client, owner_with_supplier, fore
     url = reverse('supplier-detail', args=[supplier.id])
     response = api_client.get(url)
 
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 @pytest.mark.django_db
 def test_view_supplier_unathorized_error(api_client, owner_with_supplier):
@@ -123,8 +143,7 @@ def test_edit_supplier_owner_success(api_client, owner_with_supplier):
     supplier = owner_with_supplier.company.suppliers.first()
 
     url = reverse('supplier-edit', args=[supplier.id])
-    new_data ={'company': owner_with_supplier.company.id,
-               'title': 'SupplierUpdateOwnerTest',
+    new_data ={'title': 'SupplierUpdateOwnerTest',
                'INN': '888888888888'}
     response = api_client.put(url, new_data, format='json')
 
@@ -141,8 +160,7 @@ def test_edit_supplier_employee_success(api_client, employee_with_supplier):
     supplier = employee_with_supplier.company.suppliers.first()
 
     url = reverse('supplier-edit', args=[supplier.id])
-    new_data = {'company': employee_with_supplier.company.id,
-                'title': 'SupplierUpdateOwnerTest',
+    new_data = {'title': 'SupplierUpdateOwnerTest',
                 'INN': '888888888888'}
     response = api_client.put(url, new_data, format='json')
 
@@ -160,12 +178,11 @@ def test_edit_supplier_diff_employee_error(api_client, owner_with_supplier, fore
     supplier = owner_with_supplier.company.suppliers.first()
     url = reverse('supplier-edit', args=[supplier.id])
 
-    new_data = {'company': owner_with_supplier.company.id,
-                'title': 'SupplierUpdateOwnerTest',
+    new_data = {'title': 'SupplierUpdateOwnerTest',
                 'INN': '888888888888'}
     response = api_client.put(url, new_data, format='json')
 
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db
@@ -175,8 +192,7 @@ def test_create_supplier_unathorized_error(api_client, owner_with_supplier):
     supplier = owner_with_supplier.company.suppliers.first()
     url = reverse('supplier-edit', args=[supplier.id])
 
-    new_data = {'company': owner_with_supplier.company.id,
-                'title': 'SupplierUpdateOwnerTest',
+    new_data = {'title': 'SupplierUpdateOwnerTest',
                 'INN': '888888888888'}
     response = api_client.put(url, new_data, format='json')
 
@@ -224,7 +240,7 @@ def test_delete_supplier_diff_employee_error(api_client, owner_with_supplier, fo
     url = reverse('supplier-delete', args=[supplier.id])
     response = api_client.delete(url)
 
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 @pytest.mark.django_db
 def test_delete_supplier_unathorized_error(api_client, owner_with_supplier):

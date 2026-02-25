@@ -138,7 +138,6 @@ def employee_with_supply(employee_with_supplier):
 @pytest.fixture
 def owner_with_product(owner_with_storage):
     """Owner with one product for testing edit/view/delete"""
-    from products.models import Product
 
     Product.objects.create(
         title='Test Product',
@@ -152,7 +151,6 @@ def owner_with_product(owner_with_storage):
 @pytest.fixture
 def employee_with_product(employee_with_storage):
     """Owner with one product for testing edit/view/delete"""
-    from products.models import Product
 
     Product.objects.create(
         title='Test Product',
@@ -162,3 +160,22 @@ def employee_with_product(employee_with_storage):
     )
 
     return employee_with_storage
+
+
+
+@pytest.fixture
+def storage(owner_user):
+    return Storage.objects.create(
+        company=owner_user.company,
+        address='Main Street 1'
+    )
+
+@pytest.fixture
+def test_product(storage):
+    return Product.objects.create(
+        title='Test Product',
+        purchase_price=10,
+        sale_price=15,
+        quantity=10,
+        storage=storage
+    )

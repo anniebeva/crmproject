@@ -12,12 +12,29 @@ class SupplierCreateView(generics.CreateAPIView):
     serializer_class = SupplierSerializer
     permission_classes = [permissions.IsAuthenticated, SupplierPermission]
 
+
+class SupplierListView(generics.ListAPIView):
+    """Review all suppliers"""
+
+    serializer_class = SupplierSerializer
+    permission_classes = [permissions.IsAuthenticated, SupplierPermission]
+
+    def get_queryset(self):
+        return Supplier.objects.filter(
+            company=self.request.user.company
+        )
+
+
 class SupplierDetailView(generics.RetrieveAPIView):
     """Review supplier's detail"""
 
     serializer_class = SupplierSerializer
     permission_classes = [permissions.IsAuthenticated, SupplierPermission]
-    queryset = Supplier.objects.all()
+
+    def get_queryset(self):
+        return Supplier.objects.filter(
+            company=self.request.user.company
+        )
 
 
 class SupplierDeleteView(generics.DestroyAPIView):
@@ -25,7 +42,11 @@ class SupplierDeleteView(generics.DestroyAPIView):
 
     serializer_class = SupplierSerializer
     permission_classes = [permissions.IsAuthenticated, SupplierPermission]
-    queryset = Supplier.objects.all()
+
+    def get_queryset(self):
+        return Supplier.objects.filter(
+            company=self.request.user.company
+        )
 
 
 
@@ -33,4 +54,8 @@ class SupplierEditView(generics.UpdateAPIView):
     """Edit supplier's detail"""
     serializer_class = SupplierSerializer
     permission_classes = [permissions.IsAuthenticated, SupplierPermission]
-    queryset = Supplier.objects.all()
+
+    def get_queryset(self):
+        return Supplier.objects.filter(
+            company=self.request.user.company
+        )

@@ -1,12 +1,22 @@
 from rest_framework import serializers
-from .models import Supply
+from rest_framework.fields import SerializerMethodField
+
+from .models import Supply, SupplyProduct
+from products.models import Product
+
+class SupplyProductSerializer(serializers.Serializer):
+    product_id = serializers.IntegerField()
+    quantity = serializers.IntegerField(min_value=1)
 
 
 class SupplySerializer(serializers.ModelSerializer):
+    products = SupplyProductSerializer(many=True, write_only=True)
+    products_info = SerializerMethodField(read_only=True)
+
     class Meta:
         model = Supply
         read_only_fields = ['id']
-        fields = ['id', 'supplier', 'delivery_date']
+        fields = ['id', 'supplier', 'delivery_date', 'products', 'products_info']
 
     def validate_supplier(self, supplier):
         user = self.context['request'].user
@@ -18,6 +28,64 @@ class SupplySerializer(serializers.ModelSerializer):
 
         return supplier
 
+    def get_products_info(self, obj):
+        return [
+            {
+            'product_id': sp.product.id,
+            'title': sp.product.title,
+            'quantity': sp.quantity
+            }
+            for sp in obj.supply_items.all()
+        ]
+
+    def create(self, validated_data):
+        """Create Supply and SupplyProduct items, update product qty"""
+
+        product_data = validated_data.pop('products')
+        supply = Supply.objects.create(**validated_data)
+
+        for p in product_data:
+            product = Product.objects.get(id=p['product_id'])
+
+            SupplyProduct.objects.create(
+                supply=supply,
+                product=product,
+                quantity=p['quantity']
+            )
+
+            product.quantity += p['quantity']
+            product.save()
+
+        return supply
+
+
+    def update(self, instance, validated_data):
+        """Update product quantity and SupplyProduct model"""
+
+        product_data = validated_data.pop('products')
+        instance.supplier = validated_data.get('supplier', instance.supplier)
+        instance.delivery_date = validated_data.get('delivery_date', instance.delivery_date)
+        instance.save()
+
+        for sp in instance.supply_items.all():
+            sp.product.quantity -= sp.quantity
+            sp.product.save()
+
+        instance.supply_items.all().delete()
+
+        for p in product_data:
+            product = Product.objects.get(id=p['product_id'])
+
+            SupplyProduct.objects.create(
+                supply=instance,
+                product=product,
+                quantity=p['quantity']
+            )
+
+            product.quantity += p['quantity']
+            product.save()
+
+        return instance
 
 
 

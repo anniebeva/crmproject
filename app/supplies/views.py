@@ -11,6 +11,11 @@ class SupplyCreateView(generics.CreateAPIView):
     serializer_class = SupplySerializer
     permission_classes = [permissions.IsAuthenticated, SupplyPermissions]
 
+class SupplyListView(generics.ListAPIView):
+    queryset = Supply.objects.all()
+    serializer_class = SupplySerializer
+    permission_classes = [permissions.IsAuthenticated, SupplyPermissions]
+
 class SupplyDetailVIew(generics.RetrieveAPIView):
     """Review supply's detail"""
 

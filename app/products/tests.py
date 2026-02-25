@@ -121,6 +121,40 @@ def test_create_product_w_negative_sale_price_error(api_client, owner_with_stora
     response = api_client.post(url, data, format='json')
     assert response.status_code == 400
 
+
+#View list of products GET
+@pytest.mark.django_db
+def test_list_products_owner_success(api_client, owner_with_product):
+    """Owner can see list of products"""
+
+    api_client.force_authenticate(user=owner_with_product)
+
+    url = reverse('products-list')
+    response = api_client.get(url)
+
+    assert response.status_code == 200
+
+@pytest.mark.django_db
+def test_list_products_employee_success(api_client, employee_with_product):
+    """Employee can see list of products"""
+
+    api_client.force_authenticate(user=employee_with_product)
+
+    url = reverse('products-list')
+    response = api_client.get(url)
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_list_product_unauthorized_error(api_client, owner_with_product):
+    """Error: Unauthorized user cannot view products list"""
+
+    url = reverse('products-list')
+    response = api_client.get(url)
+
+    assert response.status_code == 401
+
 # View product GET
 
 @pytest.mark.django_db
@@ -160,7 +194,7 @@ def test_view_product_diff_employee_error(api_client, owner_with_product, foreig
 
     url = reverse('product-detail', args=[product.id])
     response = api_client.get(url)
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db
@@ -274,7 +308,7 @@ def test_edit_product_diff_employee_error(api_client, owner_with_product, foreig
 
     url = reverse('product-edit', args=[product.id])
     response = api_client.put(url, data)
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db
@@ -414,7 +448,7 @@ def test_delete_product_diff_employee_error(api_client, owner_with_product, fore
 
     url = reverse('product-delete', args=[product.id])
     response = api_client.delete(url)
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db
