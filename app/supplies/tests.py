@@ -30,7 +30,7 @@ def test_create_supply_owner_success(api_client, owner_with_supplier, test_produ
     assert response.status_code == 201
 
     test_product.refresh_from_db()
-    assert test_product.quantity == 15
+    assert test_product.quantity == 5
     assert Supply.objects.count() == 1
 
 @pytest.mark.django_db
@@ -54,7 +54,7 @@ def test_create_supply_employee_success(api_client, employee_with_supplier, test
 
     assert response.status_code == 201
     test_product.refresh_from_db()
-    assert test_product.quantity == 15
+    assert test_product.quantity == 5
     assert Supply.objects.count() == 1
 
 
@@ -162,7 +162,7 @@ def test_list_supplies_unauthorized_error(api_client, owner_with_supply):
 # View details GET
 
 @pytest.mark.django_db
-def test_view_supply_owner_success(api_client, owner_with_supply):
+def test_view_supply_owner_success(api_client, owner_with_supply, test_product):
     """Owner can view a supply for their company"""
 
     api_client.force_authenticate(user=owner_with_supply)
@@ -177,8 +177,15 @@ def test_view_supply_owner_success(api_client, owner_with_supply):
     assert response.data['id'] == supply.id
     assert response.data['supplier'] == supplier.id
 
+    products_info = response.data['products_info']
+    assert len(products_info) > 0
+    assert products_info[0]['quantity'] == 5
+
+    test_product.refresh_from_db()
+    assert test_product.quantity == 5
+
 @pytest.mark.django_db
-def test_view_supply_employee_success(api_client, employee_with_supply):
+def test_view_supply_employee_success(api_client, employee_with_supply, test_product):
     """Owner can view a supply for their company"""
 
     api_client.force_authenticate(user=employee_with_supply)
@@ -192,6 +199,13 @@ def test_view_supply_employee_success(api_client, employee_with_supply):
     assert response.status_code == 200
     assert response.data['id'] == supply.id
     assert response.data['supplier'] == supplier.id
+
+    products_info = response.data['products_info']
+    assert len(products_info) > 0
+    assert products_info[0]['quantity'] == 5
+
+    test_product.refresh_from_db()
+    assert test_product.quantity == 5
 
 @pytest.mark.django_db
 def test_view_supply_diff_employee_error(api_client, owner_with_supply, foreign_company_employee):
@@ -221,12 +235,15 @@ def test_view_supply_unathorized_error(api_client, owner_with_supply):
 # Edit details PUT
 
 @pytest.mark.django_db
-def test_edit_supply_owner_success(api_client, owner_with_supply, test_product):
+def test_edit_supply_owner_success(api_client, owner_with_supplier, test_product):
     """Owner can edit a supply for their company"""
 
-    api_client.force_authenticate(user=owner_with_supply)
-    supplier = owner_with_supply.company.suppliers.first()
-    supply = supplier.supplies.first()
+    api_client.force_authenticate(user=owner_with_supplier)
+    supplier = owner_with_supplier.company.suppliers.first()
+
+    supply = Supply.objects.create(supplier=supplier, delivery_date='2026-02-01')
+    SupplyProduct.objects.create(supply=supply, product=test_product, quantity=5)
+    supply.apply()
 
     url = reverse('supply-edit', args=[supply.id])
     data = {'supplier': supplier.id,
@@ -239,17 +256,22 @@ def test_edit_supply_owner_success(api_client, owner_with_supply, test_product):
 
     assert response.status_code == 200
 
+    test_product.refresh_from_db()
     supply.refresh_from_db()
     assert response.data['delivery_date'] == '2026-02-01'
     assert test_product.quantity == 10
 
 @pytest.mark.django_db
-def test_edit_supply_empoyee_success(api_client, employee_with_supply, test_product):
+def test_edit_supply_empoyee_success(api_client, employee_with_supplier, test_product):
     """Employee can edit a supply for their company"""
 
-    api_client.force_authenticate(user=employee_with_supply)
-    supplier = employee_with_supply.company.suppliers.first()
-    supply = supplier.supplies.first()
+    api_client.force_authenticate(user=employee_with_supplier)
+
+    supplier = employee_with_supplier.company.suppliers.first()
+
+    supply = Supply.objects.create(supplier=supplier, delivery_date='2026-02-01')
+    SupplyProduct.objects.create(supply=supply, product=test_product, quantity=5)
+    supply.apply()
 
     url = reverse('supply-edit', args=[supply.id])
     data = {'supplier': supplier.id,
@@ -262,6 +284,7 @@ def test_edit_supply_empoyee_success(api_client, employee_with_supply, test_prod
 
     assert response.status_code == 200
 
+    test_product.refresh_from_db()
     supply.refresh_from_db()
     assert response.data['delivery_date'] == '2026-02-01'
     assert test_product.quantity == 10
@@ -372,11 +395,20 @@ def test_delete_supply_owner_success(api_client, owner_with_supply):
     supplier = owner_with_supply.company.suppliers.first()
     supply = supplier.supplies.first()
 
+    supply_item = supply.supply_items.first()
+    product = supply_item.product
+
+    old_quantity = product.quantity
+    supply_quantity = supply_item.quantity
+
     url = reverse('supply-delete', args=[supply.id])
     response = api_client.delete(url)
 
     assert response.status_code == 204
-    assert not Supply.objects.filter(id=supply.id).exists()
+
+    product.refresh_from_db()
+
+    assert product.quantity == old_quantity - supply_quantity
 
 @pytest.mark.django_db
 def test_delete_supply_employee_success(api_client, employee_with_supply):
@@ -387,11 +419,20 @@ def test_delete_supply_employee_success(api_client, employee_with_supply):
     supplier = employee_with_supply.company.suppliers.first()
     supply = supplier.supplies.first()
 
+    supply_item = supply.supply_items.first()
+    product = supply_item.product
+
+    old_quantity = product.quantity
+    supply_quantity = supply_item.quantity
+
     url = reverse('supply-delete', args=[supply.id])
     response = api_client.delete(url)
 
     assert response.status_code == 204
-    assert not Supply.objects.filter(id=supply.id).exists()
+
+    product.refresh_from_db()
+
+    assert product.quantity == old_quantity - supply_quantity
 
 @pytest.mark.django_db
 def test_delete_supply_diff_employee_error(api_client, owner_with_supply, foreign_company_employee):

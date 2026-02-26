@@ -53,8 +53,7 @@ class SupplySerializer(serializers.ModelSerializer):
                 quantity=p['quantity']
             )
 
-            product.quantity += p['quantity']
-            product.save()
+        supply.apply()
 
         return supply
 
@@ -63,13 +62,11 @@ class SupplySerializer(serializers.ModelSerializer):
         """Update product quantity and SupplyProduct model"""
 
         product_data = validated_data.pop('products')
+        instance.rollback()
+
         instance.supplier = validated_data.get('supplier', instance.supplier)
         instance.delivery_date = validated_data.get('delivery_date', instance.delivery_date)
         instance.save()
-
-        for sp in instance.supply_items.all():
-            sp.product.quantity -= sp.quantity
-            sp.product.save()
 
         instance.supply_items.all().delete()
 
@@ -82,8 +79,7 @@ class SupplySerializer(serializers.ModelSerializer):
                 quantity=p['quantity']
             )
 
-            product.quantity += p['quantity']
-            product.save()
+        instance.apply()
 
         return instance
 

@@ -15,6 +15,20 @@ class Supply(models.Model):
         verbose_name = 'Supply'
         verbose_name_plural = 'Supplies'
 
+    def apply(self):
+        for sp in self.supply_items.all():
+            sp.product.quantity += sp.quantity
+            sp.product.save()
+
+    def rollback(self):
+        for sp in self.supply_items.all():
+            sp.product.quantity -= sp.quantity
+            sp.product.save()
+
+    def delete(self, *args, **kwargs):
+        self.rollback()
+        super().delete(*args, **kwargs)
+
     def __str__(self):
         return f'Supply #{self.id}'
 

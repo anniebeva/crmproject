@@ -6,7 +6,7 @@ from authenticate.models import User
 from companies.models import Company
 from storage.models import Storage
 from suppliers.models import Supplier
-from supplies.models import Supply
+from supplies.models import Supply, SupplyProduct
 from products.models import Product
 from utils import create_employee, create_owner
 
@@ -110,27 +110,44 @@ def employee_with_supplier(employee_user):
 
 
 @pytest.fixture
-def owner_with_supply(owner_with_supplier):
-    """create supply for test owner"""
+def owner_with_supply(owner_with_supplier, test_product):
     supplier = owner_with_supplier.company.suppliers.first()
 
-    Supply.objects.create(
+    supply = Supply.objects.create(
         supplier=supplier,
         delivery_date=datetime.date.today()
     )
+
+    SupplyProduct.objects.create(
+        supply=supply,
+        product=test_product,
+        quantity=5
+    )
+
+    supply.apply()
+    test_product.refresh_from_db()
 
     return owner_with_supplier
 
 
 @pytest.fixture
-def employee_with_supply(employee_with_supplier):
+def employee_with_supply(employee_with_supplier, test_product):
     """create supply for test employee"""
     supplier = employee_with_supplier.company.suppliers.first()
 
-    Supply.objects.create(
+    supply = Supply.objects.create(
         supplier=supplier,
         delivery_date=datetime.date.today()
     )
+
+    SupplyProduct.objects.create(
+        supply=supply,
+        product=test_product,
+        quantity=5
+    )
+
+    supply.apply()
+    test_product.refresh_from_db()
 
     return employee_with_supplier
 
@@ -171,11 +188,11 @@ def test_storage(owner_user):
     )
 
 @pytest.fixture
-def test_product(storage):
+def test_product(test_storage):
     return Product.objects.create(
         title='Test Product',
         purchase_price=10,
         sale_price=15,
-        quantity=10,
-        storage=storage
+        quantity=0,
+        storage=test_storage
     )
