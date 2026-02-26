@@ -164,7 +164,7 @@ def employee_with_product(employee_with_storage):
 
 
 @pytest.fixture
-def storage(owner_user):
+def test_storage(owner_user):
     return Storage.objects.create(
         company=owner_user.company,
         address='Main Street 1'
