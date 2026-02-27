@@ -19,10 +19,7 @@ def test_create_supply_owner_success(api_client, owner_with_supplier, test_produ
     data = {'supplier': supplier.id,
             'delivery_date': '2026-03-01',
             'products': [
-                    {
-                    'product_id': test_product.id,
-                    'quantity': 5
-                    }
+                    {'product_id': test_product.id, 'quantity': 5}
                 ]
             }
     response = api_client.post(url, data, format='json')
@@ -44,11 +41,8 @@ def test_create_supply_employee_success(api_client, employee_with_supplier, test
     data = {'supplier': supplier.id,
             'delivery_date': '2026-03-01',
             'products': [
-                {
-                    'product_id': test_product.id,
-                    'quantity': 5
-                }
-            ]
+                    {'product_id': test_product.id, 'quantity': 5}
+                ]
             }
     response = api_client.post(url, data, format='json')
 
@@ -70,11 +64,8 @@ def test_create_supply_diff_employee_error(api_client, owner_with_supplier,
     data = {'supplier': supplier.id,
             'delivery_date': '2026-03-01',
             'products': [
-                {
-                    'product_id': test_product.id,
-                    'quantity': 5
-                }
-            ]
+                    {'product_id': test_product.id, 'quantity': 5}
+                ]
             }
     response = api_client.post(url, data, format='json')
 
@@ -91,10 +82,7 @@ def test_create_supplier_unathorized_error(api_client, owner_with_supplier, test
     data = {'supplier': supplier.id,
             'delivery_date': '2026-03-01',
             'products': [
-                {
-                    'product_id': test_product.id,
-                    'quantity': 5
-                }
+                    {'product_id': test_product.id, 'quantity': 5}
                 ]
             }
     response = api_client.post(url, data, format='json')
@@ -113,11 +101,8 @@ def test_supply_create_invalid_date_error(api_client, owner_with_supplier, test_
     data = {'supplier': supplier.id,
             'delivery_date': 'invalid_date',
             'products': [
-                {
-                    'product_id': test_product.id,
-                    'quantity': 5
-                }
-            ]
+                    {'product_id': test_product.id, 'quantity': 5}
+                ]
             }
 
     response = api_client.post(url, data, format='json')
@@ -249,8 +234,8 @@ def test_edit_supply_owner_success(api_client, owner_with_supplier, test_product
     data = {'supplier': supplier.id,
             'delivery_date': '2026-02-01',
             'products': [
-                {'product_id': test_product.id, 'quantity': 10}
-            ]
+                    {'product_id': test_product.id, 'quantity': 10}
+                ]
             }
     response = api_client.put(url, data, format='json')
 
@@ -277,8 +262,8 @@ def test_edit_supply_empoyee_success(api_client, employee_with_supplier, test_pr
     data = {'supplier': supplier.id,
             'delivery_date': '2026-02-01',
             'products': [
-                {'product_id': test_product.id, 'quantity': 10}
-            ]
+                    {'product_id': test_product.id, 'quantity': 10}
+                ]
             }
     response = api_client.put(url, data, format='json')
 
@@ -303,8 +288,8 @@ def test_edit_supply_diff_employee_error(api_client, owner_with_supply,
     data = {'supplier': supplier.id,
             'delivery_date': '2026-02-01',
             'products': [
-                {'product_id': test_product.id, 'quantity': 10}
-            ]
+                    {'product_id': test_product.id, 'quantity': 10}
+                ]
             }
 
     response = api_client.put(url, data, format='json')
@@ -323,8 +308,8 @@ def test_edit_supplier_unathorized_error(api_client, owner_with_supply, test_pro
     data = {'supplier': supplier.id,
             'delivery_date': '2026-02-01',
             'products': [
-                {'product_id': test_product.id, 'quantity': 10}
-            ]
+                    {'product_id': test_product.id, 'quantity': 10}
+                ]
             }
     response = api_client.put(url, data, format='json')
 
@@ -344,8 +329,8 @@ def test_supply_edit_invalid_date_error(api_client, owner_with_supply, test_prod
     data = {'supplier': supplier.id,
             'delivery_date': 'invalid_date',
             'products': [
-                {'product_id': test_product.id, 'quantity': 10}
-            ]
+                    {'product_id': test_product.id, 'quantity': 10}
+                ]
             }
     response = api_client.put(url, data, format='json')
 
@@ -373,11 +358,8 @@ def test_edit_supply_diff_supplier_error(api_client, owner_with_supply,
     data = {'supplier': foreign_supplier.id,
             'delivery_date': '2026-02-01',
             'products': [
-                {
-                    'product_id': test_product.id,
-                    'quantity': 10
-                }
-            ]
+                    {'product_id': test_product.id, 'quantity': 10}
+                ]
             }
 
     response = api_client.put(url, data, format='json')
@@ -407,7 +389,6 @@ def test_delete_supply_owner_success(api_client, owner_with_supply):
     assert response.status_code == 204
 
     product.refresh_from_db()
-
     assert product.quantity == old_quantity - supply_quantity
 
 @pytest.mark.django_db
@@ -431,7 +412,6 @@ def test_delete_supply_employee_success(api_client, employee_with_supply):
     assert response.status_code == 204
 
     product.refresh_from_db()
-
     assert product.quantity == old_quantity - supply_quantity
 
 @pytest.mark.django_db
