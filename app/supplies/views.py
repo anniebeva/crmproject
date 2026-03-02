@@ -7,21 +7,32 @@ from rest_framework import generics, permissions
 
 class SupplyCreateView(generics.CreateAPIView):
     """Create new supply record"""
+
     queryset = Supply.objects.all()
     serializer_class = SupplySerializer
     permission_classes = [permissions.IsAuthenticated, SupplyPermissions]
 
 class SupplyListView(generics.ListAPIView):
-    queryset = Supply.objects.all()
+    """Review list of supplies"""
+
     serializer_class = SupplySerializer
     permission_classes = [permissions.IsAuthenticated, SupplyPermissions]
 
-class SupplyDetailVIew(generics.RetrieveAPIView):
+    def get_queryset(self):
+        return Supply.objects.filter(
+            supplier__company=self.request.user.company
+        )
+
+class SupplyDetailView(generics.RetrieveAPIView):
     """Review supply's detail"""
 
     serializer_class = SupplySerializer
     permission_classes = [permissions.IsAuthenticated, SupplyPermissions]
-    queryset = Supply.objects.all()
+
+    def get_queryset(self):
+        return Supply.objects.filter(
+            supplier__company=self.request.user.company
+        )
 
 
 class SupplyEditView(generics.UpdateAPIView):
@@ -29,7 +40,11 @@ class SupplyEditView(generics.UpdateAPIView):
 
     serializer_class = SupplySerializer
     permission_classes = [permissions.IsAuthenticated, SupplyPermissions]
-    queryset = Supply.objects.all()
+
+    def get_queryset(self):
+        return Supply.objects.filter(
+            supplier__company=self.request.user.company
+        )
 
 
 class SupplyDeleteView(generics.DestroyAPIView):
@@ -37,5 +52,9 @@ class SupplyDeleteView(generics.DestroyAPIView):
 
     serializer_class = SupplySerializer
     permission_classes = [permissions.IsAuthenticated, SupplyPermissions]
-    queryset = Supply.objects.all()
+
+    def get_queryset(self):
+        return Supply.objects.filter(
+            supplier__company=self.request.user.company
+        )
 

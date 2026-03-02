@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'suppliers',
     'supplies',
     'products',
+    'sales',
     'rest_framework',
     'drf_spectacular',
 ]

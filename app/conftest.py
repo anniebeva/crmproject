@@ -110,7 +110,7 @@ def employee_with_supplier(employee_user):
 
 
 @pytest.fixture
-def owner_with_supply(owner_with_supplier, test_product):
+def owner_with_supply(owner_with_supplier, test_product_owner):
     supplier = owner_with_supplier.company.suppliers.first()
 
     supply = Supply.objects.create(
@@ -120,18 +120,18 @@ def owner_with_supply(owner_with_supplier, test_product):
 
     SupplyProduct.objects.create(
         supply=supply,
-        product=test_product,
+        product=test_product_owner,
         quantity=5
     )
 
     supply.apply()
-    test_product.refresh_from_db()
+    test_product_owner.refresh_from_db()
 
     return owner_with_supplier
 
 
 @pytest.fixture
-def employee_with_supply(employee_with_supplier, test_product):
+def employee_with_supply(employee_with_supplier, test_product_employee):
     """create supply for test employee"""
     supplier = employee_with_supplier.company.suppliers.first()
 
@@ -142,12 +142,12 @@ def employee_with_supply(employee_with_supplier, test_product):
 
     SupplyProduct.objects.create(
         supply=supply,
-        product=test_product,
+        product=test_product_employee,
         quantity=5
     )
 
     supply.apply()
-    test_product.refresh_from_db()
+    test_product_employee.refresh_from_db()
 
     return employee_with_supplier
 
@@ -181,18 +181,37 @@ def employee_with_product(employee_with_storage):
 
 
 @pytest.fixture
-def test_storage(owner_user):
+def test_storage_owner(owner_user):
     return Storage.objects.create(
         company=owner_user.company,
         address='Main Street 1'
     )
 
 @pytest.fixture
-def test_product(test_storage):
+def test_storage_employee(employee_user):
+    return Storage.objects.create(
+        company=employee_user.company,
+        address='Main Street 1'
+    )
+
+
+@pytest.fixture
+def test_product_owner(test_storage_owner):
     return Product.objects.create(
         title='Test Product',
         purchase_price=10,
         sale_price=15,
         quantity=0,
-        storage=test_storage
+        storage=test_storage_owner
     )
+
+@pytest.fixture
+def test_product_employee(test_storage_employee):
+    return Product.objects.create(
+        title='Test Product',
+        purchase_price=10,
+        sale_price=15,
+        quantity=0,
+        storage=test_storage_employee
+    )
+

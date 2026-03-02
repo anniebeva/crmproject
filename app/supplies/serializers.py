@@ -5,8 +5,19 @@ from .models import Supply, SupplyProduct
 from products.models import Product
 
 class SupplyProductSerializer(serializers.Serializer):
-    product_id = serializers.IntegerField()
-    quantity = serializers.IntegerField()
+
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+    quantity = serializers.IntegerField(min_value=1)
+
+    def validate_product(self, product):
+        user = self.context['request'].user
+
+        if product.storage.company != user.company:
+            raise serializers.ValidationError(
+                'This product belongs to another company'
+            )
+
+        return product
 
 
 class SupplySerializer(serializers.ModelSerializer):
@@ -29,9 +40,10 @@ class SupplySerializer(serializers.ModelSerializer):
         return supplier
 
     def get_products_info(self, obj):
+        """Get information about products in the supply"""
         return [
             {
-            'product_id': sp.product.id,
+            'product': sp.product.id,
             'title': sp.product.title,
             'quantity': sp.quantity
             }
@@ -42,14 +54,13 @@ class SupplySerializer(serializers.ModelSerializer):
         """Create Supply and SupplyProduct items, update product qty"""
 
         product_data = validated_data.pop('products')
+
         supply = Supply.objects.create(**validated_data)
 
         for p in product_data:
-            product = Product.objects.get(id=p['product_id'])
-
             SupplyProduct.objects.create(
                 supply=supply,
-                product=product,
+                product=p['product'],
                 quantity=p['quantity']
             )
 
@@ -71,11 +82,10 @@ class SupplySerializer(serializers.ModelSerializer):
         instance.supply_items.all().delete()
 
         for p in product_data:
-            product = Product.objects.get(id=p['product_id'])
 
             SupplyProduct.objects.create(
                 supply=instance,
-                product=product,
+                product=p['product'],
                 quantity=p['quantity']
             )
 

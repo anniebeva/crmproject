@@ -9,17 +9,18 @@ from .models import Supply, SupplyProduct
 
 # Create POST
 @pytest.mark.django_db
-def test_create_supply_owner_success(api_client, owner_with_supplier, test_product):
+def test_create_supply_owner_success(api_client, owner_with_supplier, test_product_owner):
     """Owner can create a supply for their company"""
 
     api_client.force_authenticate(user=owner_with_supplier)
     supplier = owner_with_supplier.company.suppliers.first()
+    test_product = test_product_owner
 
     url = reverse('supply-create')
     data = {'supplier': supplier.id,
             'delivery_date': '2026-03-01',
             'products': [
-                    {'product_id': test_product.id, 'quantity': 5}
+                    {'product': test_product.id, 'quantity': 5}
                 ]
             }
     response = api_client.post(url, data, format='json')
@@ -31,20 +32,23 @@ def test_create_supply_owner_success(api_client, owner_with_supplier, test_produ
     assert Supply.objects.count() == 1
 
 @pytest.mark.django_db
-def test_create_supply_employee_success(api_client, employee_with_supplier, test_product):
+def test_create_supply_employee_success(api_client, employee_with_supplier, test_product_employee):
     """Employee can create a supply for their company"""
 
     api_client.force_authenticate(user=employee_with_supplier)
     supplier = employee_with_supplier.company.suppliers.first()
+    test_product = test_product_employee
 
     url = reverse('supply-create')
     data = {'supplier': supplier.id,
             'delivery_date': '2026-03-01',
             'products': [
-                    {'product_id': test_product.id, 'quantity': 5}
+                    {'product': test_product.id, 'quantity': 5}
                 ]
             }
     response = api_client.post(url, data, format='json')
+    print(employee_with_supplier.company)
+    print(test_product.storage.company)
 
     assert response.status_code == 201
     test_product.refresh_from_db()
@@ -54,17 +58,18 @@ def test_create_supply_employee_success(api_client, employee_with_supplier, test
 
 @pytest.mark.django_db
 def test_create_supply_diff_employee_error(api_client, owner_with_supplier,
-                                           foreign_company_employee, test_product):
+                                           foreign_company_employee, test_product_owner):
     """Error: Employee of a different company cannot create a supply"""
 
     api_client.force_authenticate(user=foreign_company_employee)
     supplier = owner_with_supplier.company.suppliers.first()
+    test_product = test_product_owner
 
     url = reverse('supply-create')
     data = {'supplier': supplier.id,
             'delivery_date': '2026-03-01',
             'products': [
-                    {'product_id': test_product.id, 'quantity': 5}
+                    {'product': test_product.id, 'quantity': 5}
                 ]
             }
     response = api_client.post(url, data, format='json')
@@ -73,7 +78,7 @@ def test_create_supply_diff_employee_error(api_client, owner_with_supplier,
 
 
 @pytest.mark.django_db
-def test_create_supplier_unathorized_error(api_client, owner_with_supplier, test_product):
+def test_create_supply_unathorized_error(api_client, owner_with_supplier, test_product_owner):
     """Error: Unauthorized user cannot create a supply"""
 
     supplier = owner_with_supplier.company.suppliers.first()
@@ -82,7 +87,7 @@ def test_create_supplier_unathorized_error(api_client, owner_with_supplier, test
     data = {'supplier': supplier.id,
             'delivery_date': '2026-03-01',
             'products': [
-                    {'product_id': test_product.id, 'quantity': 5}
+                    {'product': test_product_owner.id, 'quantity': 5}
                 ]
             }
     response = api_client.post(url, data, format='json')
@@ -90,7 +95,7 @@ def test_create_supplier_unathorized_error(api_client, owner_with_supplier, test
     assert response.status_code == 401
 
 @pytest.mark.django_db
-def test_supply_create_invalid_date_error(api_client, owner_with_supplier, test_product):
+def test_create_supply_invalid_date_error(api_client, owner_with_supplier, test_product_owner):
     """Cannot create supply with invalid delivery_date"""
 
     api_client.force_authenticate(user=owner_with_supplier)
@@ -101,7 +106,7 @@ def test_supply_create_invalid_date_error(api_client, owner_with_supplier, test_
     data = {'supplier': supplier.id,
             'delivery_date': 'invalid_date',
             'products': [
-                    {'product_id': test_product.id, 'quantity': 5}
+                    {'product_id': test_product_owner.id, 'quantity': 5}
                 ]
             }
 
@@ -109,6 +114,26 @@ def test_supply_create_invalid_date_error(api_client, owner_with_supplier, test_
 
     assert response.status_code == 400
     assert 'delivery_date' in response.data
+
+@pytest.mark.django_db
+def test_create_supply_negative_quantity(api_client, owner_with_supplier, test_product_owner):
+    """Error: qunatity cannot be negative number"""
+
+    api_client.force_authenticate(user=owner_with_supplier)
+    supplier = owner_with_supplier.company.suppliers.first()
+
+    url = reverse('supply-create')
+    data = {'supplier': supplier.id,
+            'delivery_date': '2026-03-01',
+            'products': [
+                    {'product': test_product_owner.id, 'quantity': -5}
+                ]
+            }
+
+    response = api_client.post(url, data, format='json')
+
+    assert response.status_code == 400
+    assert 'quantity' in str(response.data)
 
 
 #View list of supplies GET
@@ -147,7 +172,7 @@ def test_list_supplies_unauthorized_error(api_client, owner_with_supply):
 # View details GET
 
 @pytest.mark.django_db
-def test_view_supply_owner_success(api_client, owner_with_supply, test_product):
+def test_view_supply_owner_success(api_client, owner_with_supply, test_product_owner):
     """Owner can view a supply for their company"""
 
     api_client.force_authenticate(user=owner_with_supply)
@@ -166,11 +191,11 @@ def test_view_supply_owner_success(api_client, owner_with_supply, test_product):
     assert len(products_info) > 0
     assert products_info[0]['quantity'] == 5
 
-    test_product.refresh_from_db()
-    assert test_product.quantity == 5
+    test_product_owner.refresh_from_db()
+    assert test_product_owner.quantity == 5
 
 @pytest.mark.django_db
-def test_view_supply_employee_success(api_client, employee_with_supply, test_product):
+def test_view_supply_employee_success(api_client, employee_with_supply, test_product_employee):
     """Owner can view a supply for their company"""
 
     api_client.force_authenticate(user=employee_with_supply)
@@ -189,8 +214,8 @@ def test_view_supply_employee_success(api_client, employee_with_supply, test_pro
     assert len(products_info) > 0
     assert products_info[0]['quantity'] == 5
 
-    test_product.refresh_from_db()
-    assert test_product.quantity == 5
+    test_product_employee.refresh_from_db()
+    assert test_product_employee.quantity == 5
 
 @pytest.mark.django_db
 def test_view_supply_diff_employee_error(api_client, owner_with_supply, foreign_company_employee):
@@ -203,7 +228,7 @@ def test_view_supply_diff_employee_error(api_client, owner_with_supply, foreign_
     url = reverse('supply-detail', args=[supply.id])
     response = api_client.get(url)
 
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 @pytest.mark.django_db
 def test_view_supply_unathorized_error(api_client, owner_with_supply):
@@ -220,34 +245,34 @@ def test_view_supply_unathorized_error(api_client, owner_with_supply):
 # Edit details PUT
 
 @pytest.mark.django_db
-def test_edit_supply_owner_success(api_client, owner_with_supplier, test_product):
+def test_edit_supply_owner_success(api_client, owner_with_supplier, test_product_owner):
     """Owner can edit a supply for their company"""
 
     api_client.force_authenticate(user=owner_with_supplier)
     supplier = owner_with_supplier.company.suppliers.first()
 
     supply = Supply.objects.create(supplier=supplier, delivery_date='2026-02-01')
-    SupplyProduct.objects.create(supply=supply, product=test_product, quantity=5)
+    SupplyProduct.objects.create(supply=supply, product=test_product_owner, quantity=5)
     supply.apply()
 
     url = reverse('supply-edit', args=[supply.id])
     data = {'supplier': supplier.id,
             'delivery_date': '2026-02-01',
             'products': [
-                    {'product_id': test_product.id, 'quantity': 10}
+                    {'product': test_product_owner.id, 'quantity': 10}
                 ]
             }
     response = api_client.put(url, data, format='json')
 
     assert response.status_code == 200
 
-    test_product.refresh_from_db()
+    test_product_owner.refresh_from_db()
     supply.refresh_from_db()
     assert response.data['delivery_date'] == '2026-02-01'
-    assert test_product.quantity == 10
+    assert test_product_owner.quantity == 10
 
 @pytest.mark.django_db
-def test_edit_supply_empoyee_success(api_client, employee_with_supplier, test_product):
+def test_edit_supply_empoyee_success(api_client, employee_with_supplier, test_product_employee):
     """Employee can edit a supply for their company"""
 
     api_client.force_authenticate(user=employee_with_supplier)
@@ -255,29 +280,29 @@ def test_edit_supply_empoyee_success(api_client, employee_with_supplier, test_pr
     supplier = employee_with_supplier.company.suppliers.first()
 
     supply = Supply.objects.create(supplier=supplier, delivery_date='2026-02-01')
-    SupplyProduct.objects.create(supply=supply, product=test_product, quantity=5)
+    SupplyProduct.objects.create(supply=supply, product=test_product_employee, quantity=5)
     supply.apply()
 
     url = reverse('supply-edit', args=[supply.id])
     data = {'supplier': supplier.id,
             'delivery_date': '2026-02-01',
             'products': [
-                    {'product_id': test_product.id, 'quantity': 10}
+                    {'product': test_product_employee.id, 'quantity': 10}
                 ]
             }
     response = api_client.put(url, data, format='json')
 
     assert response.status_code == 200
 
-    test_product.refresh_from_db()
+    test_product_employee.refresh_from_db()
     supply.refresh_from_db()
     assert response.data['delivery_date'] == '2026-02-01'
-    assert test_product.quantity == 10
+    assert test_product_employee.quantity == 10
 
 
 @pytest.mark.django_db
 def test_edit_supply_diff_employee_error(api_client, owner_with_supply,
-                                         foreign_company_employee, test_product):
+                                         foreign_company_employee, test_product_owner):
     """Error: Employee of a different company cannot edit a supply"""
 
     api_client.force_authenticate(user=foreign_company_employee)
@@ -288,17 +313,17 @@ def test_edit_supply_diff_employee_error(api_client, owner_with_supply,
     data = {'supplier': supplier.id,
             'delivery_date': '2026-02-01',
             'products': [
-                    {'product_id': test_product.id, 'quantity': 10}
+                    {'product': test_product_owner.id, 'quantity': 10}
                 ]
             }
 
     response = api_client.put(url, data, format='json')
 
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db
-def test_edit_supplier_unathorized_error(api_client, owner_with_supply, test_product):
+def test_edit_supplier_unathorized_error(api_client, owner_with_supply, test_product_owner):
     """Error: Unauthorized user cannot edit a supply"""
 
     supplier = owner_with_supply.company.suppliers.first()
@@ -308,7 +333,7 @@ def test_edit_supplier_unathorized_error(api_client, owner_with_supply, test_pro
     data = {'supplier': supplier.id,
             'delivery_date': '2026-02-01',
             'products': [
-                    {'product_id': test_product.id, 'quantity': 10}
+                    {'product': test_product_owner.id, 'quantity': 10}
                 ]
             }
     response = api_client.put(url, data, format='json')
@@ -317,7 +342,7 @@ def test_edit_supplier_unathorized_error(api_client, owner_with_supply, test_pro
 
 
 @pytest.mark.django_db
-def test_supply_edit_invalid_date_error(api_client, owner_with_supply, test_product):
+def test_supply_edit_invalid_date_error(api_client, owner_with_supply, test_product_owner):
     """Error: Cannot edit supply with invalid delivery_date"""
 
     api_client.force_authenticate(user=owner_with_supply)
@@ -329,7 +354,7 @@ def test_supply_edit_invalid_date_error(api_client, owner_with_supply, test_prod
     data = {'supplier': supplier.id,
             'delivery_date': 'invalid_date',
             'products': [
-                    {'product_id': test_product.id, 'quantity': 10}
+                    {'product': test_product_owner.id, 'quantity': 10}
                 ]
             }
     response = api_client.put(url, data, format='json')
@@ -338,8 +363,31 @@ def test_supply_edit_invalid_date_error(api_client, owner_with_supply, test_prod
     assert 'delivery_date' in response.data
 
 @pytest.mark.django_db
+def test_edit_supply_negative_quantity(api_client, owner_with_supply, test_product_owner):
+    """Error: qunatity cannot be negative number"""
+
+    api_client.force_authenticate(user=owner_with_supply)
+
+    supplier = owner_with_supply.company.suppliers.first()
+    supply = supplier.supplies.first()
+
+    url = reverse('supply-edit', args=[supply.id])
+
+    data = {'supplier': supplier.id,
+            'delivery_date': '2026-03-01',
+            'products': [
+                    {'product': test_product_owner.id, 'quantity': -5}
+                ]
+            }
+
+    response = api_client.put(url, data, format='json')
+
+    assert response.status_code == 400
+    assert 'quantity' in str(response.data)
+
+@pytest.mark.django_db
 def test_edit_supply_diff_supplier_error(api_client, owner_with_supply,
-                                         foreign_company_employee, test_product):
+                                         foreign_company_employee, test_product_owner):
     """Error: Cannot change supply supplier to supplier from another company"""
 
     api_client.force_authenticate(user=owner_with_supply)
@@ -358,7 +406,7 @@ def test_edit_supply_diff_supplier_error(api_client, owner_with_supply,
     data = {'supplier': foreign_supplier.id,
             'delivery_date': '2026-02-01',
             'products': [
-                    {'product_id': test_product.id, 'quantity': 10}
+                    {'product': test_product_owner.id, 'quantity': 10}
                 ]
             }
 
@@ -425,7 +473,7 @@ def test_delete_supply_diff_employee_error(api_client, owner_with_supply, foreig
     url = reverse('supply-delete', args=[supply.id])
     response = api_client.delete(url)
 
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db
