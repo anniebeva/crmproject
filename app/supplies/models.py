@@ -38,7 +38,7 @@ class SupplyProduct(models.Model):
     product = models.ForeignKey(
         'products.Product',
         on_delete=models.CASCADE,
-        related_name='product_items'
+        related_name='supply_product_items'
     )
 
     supply = models.ForeignKey(

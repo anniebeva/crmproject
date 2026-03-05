@@ -8,6 +8,7 @@ from storage.models import Storage
 from suppliers.models import Supplier
 from supplies.models import Supply, SupplyProduct
 from products.models import Product
+from sales.models import Sale, SaleProduct
 from utils import create_employee, create_owner
 
 #Fixtures
@@ -215,3 +216,44 @@ def test_product_employee(test_storage_employee):
         storage=test_storage_employee
     )
 
+
+@pytest.fixture
+def owner_with_sales(owner_with_supply, test_product_owner):
+    sale = Sale.objects.create(
+        company=owner_with_supply.company,
+        buyer_name='Test Buyer',
+        sale_date='2026-03-01',
+        discount=20
+    )
+
+    SaleProduct.objects.create(
+        sale=sale,
+        product=test_product_owner,
+        quantity=2
+    )
+
+    sale.apply()
+    test_product_owner.refresh_from_db()
+
+    return owner_with_supply
+
+
+@pytest.fixture
+def employee_with_sales(employee_with_supply, test_product_employee):
+    sale = Sale.objects.create(
+        company=employee_with_supply.company,
+        buyer_name='Test Buyer',
+        sale_date='2026-03-01',
+        discount=20
+    )
+
+    SaleProduct.objects.create(
+        sale=sale,
+        product=test_product_employee,
+        quantity=2
+    )
+
+    sale.apply()
+    test_product_employee.refresh_from_db()
+
+    return employee_with_supply

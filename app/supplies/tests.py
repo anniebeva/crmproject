@@ -31,6 +31,7 @@ def test_create_supply_owner_success(api_client, owner_with_supplier, test_produ
     assert test_product.quantity == 5
     assert Supply.objects.count() == 1
 
+
 @pytest.mark.django_db
 def test_create_supply_employee_success(api_client, employee_with_supplier, test_product_employee):
     """Employee can create a supply for their company"""
@@ -173,7 +174,7 @@ def test_list_supplies_unauthorized_error(api_client, owner_with_supply):
 
 @pytest.mark.django_db
 def test_view_supply_owner_success(api_client, owner_with_supply, test_product_owner):
-    """Owner can view a supply for their company"""
+    """Owner can view supply details for their company"""
 
     api_client.force_authenticate(user=owner_with_supply)
 
@@ -196,7 +197,7 @@ def test_view_supply_owner_success(api_client, owner_with_supply, test_product_o
 
 @pytest.mark.django_db
 def test_view_supply_employee_success(api_client, employee_with_supply, test_product_employee):
-    """Owner can view a supply for their company"""
+    """Owner can view supply details for their company"""
 
     api_client.force_authenticate(user=employee_with_supply)
 
@@ -219,7 +220,7 @@ def test_view_supply_employee_success(api_client, employee_with_supply, test_pro
 
 @pytest.mark.django_db
 def test_view_supply_diff_employee_error(api_client, owner_with_supply, foreign_company_employee):
-    """Error: Employee of a different company cannot view a supply"""
+    """Error: Employee of a different company cannot view supply details"""
 
     api_client.force_authenticate(user=foreign_company_employee)
     supplier = owner_with_supply.company.suppliers.first()
@@ -241,6 +242,7 @@ def test_view_supply_unathorized_error(api_client, owner_with_supply):
     response = api_client.get(url)
 
     assert response.status_code == 401
+
 
 # Edit details PUT
 
@@ -270,6 +272,7 @@ def test_edit_supply_owner_success(api_client, owner_with_supplier, test_product
     supply.refresh_from_db()
     assert response.data['delivery_date'] == '2026-02-01'
     assert test_product_owner.quantity == 10
+
 
 @pytest.mark.django_db
 def test_edit_supply_empoyee_success(api_client, employee_with_supplier, test_product_employee):
@@ -418,7 +421,7 @@ def test_edit_supply_diff_supplier_error(api_client, owner_with_supply,
 # Delete supply DELETE
 @pytest.mark.django_db
 def test_delete_supply_owner_success(api_client, owner_with_supply):
-    """Owner can delete a supply for their company"""
+    """Owner can delete a supply for their company. product quantity gets updated"""
 
     api_client.force_authenticate(user=owner_with_supply)
 
@@ -441,7 +444,7 @@ def test_delete_supply_owner_success(api_client, owner_with_supply):
 
 @pytest.mark.django_db
 def test_delete_supply_employee_success(api_client, employee_with_supply):
-    """Employee can delete a supply for their company"""
+    """Employee can delete a supply for their company. Product quantity gets updated"""
 
     api_client.force_authenticate(user=employee_with_supply)
 
@@ -466,7 +469,7 @@ def test_delete_supply_employee_success(api_client, employee_with_supply):
 def test_delete_supply_diff_employee_error(api_client, owner_with_supply, foreign_company_employee):
     """Error: Employee of a different company cannot delete a supply"""
 
-    api_client.force_authenticate(foreign_company_employee)
+    api_client.force_authenticate(user=foreign_company_employee)
     supplier = owner_with_supply.company.suppliers.first()
     supply = supplier.supplies.first()
 
