@@ -69,7 +69,7 @@ def test_create_product_diff_employee_error(api_client, owner_with_storage, fore
 
 @pytest.mark.django_db
 def test_create_product_unauthorized_error(api_client, owner_with_storage):
-    """Error: unathorized user cannot create product"""
+    """Error: unauthorized user cannot create product"""
 
     storage = owner_with_storage.company.storage
 
@@ -350,7 +350,7 @@ def test_edit_product_negative_purchase_price_error(api_client, owner_with_produ
     assert response.status_code == 400
 
 def test_edit_product_negative_sale_price_error(api_client, owner_with_product):
-    """Error: Sale price cannnot be negative"""
+    """Error: Sale price cannot be negative"""
 
     api_client.force_authenticate(owner_with_product)
     storage = owner_with_product.company.storage
@@ -397,7 +397,7 @@ def test_edit_product_quantity_unchanged(api_client, owner_with_product):
     url = reverse('product-edit', args=[invalid_id])
     data = {
         'title': 'Updated Product',
-        'quntity': 5,
+        'quantity': 5,
         'purchase_price': 51.0,
         'sale_price': 81.0,
         'storage': storage.id
@@ -472,3 +472,6 @@ def test_delete_product_nonexist_error(api_client, owner_with_product):
     url = reverse('product-delete', args=[invalid_id])
     response = api_client.delete(url)
     assert response.status_code == 404
+
+
+

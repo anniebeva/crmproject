@@ -20,4 +20,15 @@ def create_employee(user_model, comp_model, username, email, company_title, inn)
 
     return user
 
+def calculate_price_at_sale(sale_price, discount):
+    return sale_price * (1 - discount / 100)
+
+def calculate_profit(purchase_price, price_at_sale, quantity) -> float:
+    """Calculate profit based on prices and discount"""
+
+    return (price_at_sale - purchase_price) * quantity
+
+
+
+
 

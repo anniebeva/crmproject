@@ -6,3 +6,4 @@ from .models import Storage
 class StorageAdmin(admin.ModelAdmin):
     list_display = ('id', 'address', 'company_id')
     list_display_links = ('id', 'address', 'company_id')
+    list_filter = ['company__title']

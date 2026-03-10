@@ -10,6 +10,7 @@ class SupplyProductInline(admin.TabularInline):
 class SupplyAdmin(admin.ModelAdmin):
     list_display = ['id', 'supplier_id', 'delivery_date']
     list_display_links = ['id', 'supplier_id']
+    list_filter = ['delivery_date', 'supplier__company']
 
     inlines = [SupplyProductInline]
 

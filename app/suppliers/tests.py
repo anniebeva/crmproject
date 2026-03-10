@@ -34,7 +34,7 @@ def test_create_supplier_employee_success(api_client, employee_user):
 
 
 @pytest.mark.django_db
-def test_create_supplier_unathorized_error(api_client, owner_user):
+def test_create_supplier_unauthorized_error(api_client, owner_user):
     """Error: Unauthorized user cannot create a supplier"""
 
     url = reverse('supplier-create')
@@ -123,8 +123,8 @@ def test_view_supplier_diff_employee_error(api_client, owner_with_supplier, fore
     assert response.status_code == 404
 
 @pytest.mark.django_db
-def test_view_supplier_unathorized_error(api_client, owner_with_supplier):
-    """Error: unathorized users cannot access suppliers"""
+def test_view_supplier_unauthorized_error(api_client, owner_with_supplier):
+    """Error: unauthorized users cannot access suppliers"""
 
     supplier = owner_with_supplier.company.suppliers.first()
     url = reverse('supplier-detail', args=[supplier.id])
@@ -186,8 +186,8 @@ def test_edit_supplier_diff_employee_error(api_client, owner_with_supplier, fore
 
 
 @pytest.mark.django_db
-def test_create_supplier_unathorized_error(api_client, owner_with_supplier):
-    """Error: unathorized users cannot edit suppliers"""
+def test_create_supplier_unauthorized_error(api_client, owner_with_supplier):
+    """Error: unauthorized users cannot edit suppliers"""
 
     supplier = owner_with_supplier.company.suppliers.first()
     url = reverse('supplier-edit', args=[supplier.id])
@@ -243,7 +243,7 @@ def test_delete_supplier_diff_employee_error(api_client, owner_with_supplier, fo
     assert response.status_code == 404
 
 @pytest.mark.django_db
-def test_delete_supplier_unathorized_error(api_client, owner_with_supplier):
+def test_delete_supplier_unauthorized_error(api_client, owner_with_supplier):
     """Error: Unauthorized user cannot delete supplier"""
 
     supplier = owner_with_supplier.company.suppliers.first()

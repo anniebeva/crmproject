@@ -49,5 +49,6 @@ class SupplyProduct(models.Model):
 
     quantity = models.PositiveIntegerField()
 
+
     def __str__(self):
-        return self.product.title
+        return f'{self.product.title} X {self.quantity}'

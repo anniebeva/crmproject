@@ -41,7 +41,7 @@ def test_attach_user_to_company_success(api_client, owner_user):
 
 @pytest.mark.django_db
 def test_attach_user_to_company_access_error(api_client, employee_user):
-    """Error: mployee cannot attach new user to company"""
+    """Error: employee cannot attach new user to company"""
 
     api_client.force_authenticate(user=employee_user)
 

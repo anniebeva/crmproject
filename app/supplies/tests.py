@@ -79,7 +79,7 @@ def test_create_supply_diff_employee_error(api_client, owner_with_supplier,
 
 
 @pytest.mark.django_db
-def test_create_supply_unathorized_error(api_client, owner_with_supplier, test_product_owner):
+def test_create_supply_unauthorized_error(api_client, owner_with_supplier, test_product_owner):
     """Error: Unauthorized user cannot create a supply"""
 
     supplier = owner_with_supplier.company.suppliers.first()
@@ -118,7 +118,7 @@ def test_create_supply_invalid_date_error(api_client, owner_with_supplier, test_
 
 @pytest.mark.django_db
 def test_create_supply_negative_quantity(api_client, owner_with_supplier, test_product_owner):
-    """Error: qunatity cannot be negative number"""
+    """Error: quantity cannot be negative number"""
 
     api_client.force_authenticate(user=owner_with_supplier)
     supplier = owner_with_supplier.company.suppliers.first()
@@ -232,8 +232,8 @@ def test_view_supply_diff_employee_error(api_client, owner_with_supply, foreign_
     assert response.status_code == 404
 
 @pytest.mark.django_db
-def test_view_supply_unathorized_error(api_client, owner_with_supply):
-    """Error: unathorized users cannot access suppliers"""
+def test_view_supply_unauthorized_error(api_client, owner_with_supply):
+    """Error: unauthorized users cannot access suppliers"""
 
     supplier = owner_with_supply.company.suppliers.first()
     supply = supplier.supplies.first()
@@ -275,7 +275,7 @@ def test_edit_supply_owner_success(api_client, owner_with_supplier, test_product
 
 
 @pytest.mark.django_db
-def test_edit_supply_empoyee_success(api_client, employee_with_supplier, test_product_employee):
+def test_edit_supply_employee_success(api_client, employee_with_supplier, test_product_employee):
     """Employee can edit a supply for their company"""
 
     api_client.force_authenticate(user=employee_with_supplier)
@@ -326,7 +326,7 @@ def test_edit_supply_diff_employee_error(api_client, owner_with_supply,
 
 
 @pytest.mark.django_db
-def test_edit_supplier_unathorized_error(api_client, owner_with_supply, test_product_owner):
+def test_edit_supplier_unauthorized_error(api_client, owner_with_supply, test_product_owner):
     """Error: Unauthorized user cannot edit a supply"""
 
     supplier = owner_with_supply.company.suppliers.first()
@@ -367,7 +367,7 @@ def test_supply_edit_invalid_date_error(api_client, owner_with_supply, test_prod
 
 @pytest.mark.django_db
 def test_edit_supply_negative_quantity(api_client, owner_with_supply, test_product_owner):
-    """Error: qunatity cannot be negative number"""
+    """Error: quantity cannot be negative number"""
 
     api_client.force_authenticate(user=owner_with_supply)
 
@@ -480,7 +480,7 @@ def test_delete_supply_diff_employee_error(api_client, owner_with_supply, foreig
 
 
 @pytest.mark.django_db
-def test_delete_supply_unathorized_error(api_client, owner_with_supply):
+def test_delete_supply_unauthorized_error(api_client, owner_with_supply):
     """Error: Unauthorized user cannot delete a supply"""
 
     supplier = owner_with_supply.company.suppliers.first()

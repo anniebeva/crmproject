@@ -6,6 +6,7 @@ class Product(models.Model):
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     sale_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.IntegerField(default=0)
+
     storage = models.ForeignKey(
         'storage.Storage',
         on_delete=models.CASCADE,

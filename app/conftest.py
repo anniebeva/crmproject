@@ -9,7 +9,7 @@ from suppliers.models import Supplier
 from supplies.models import Supply, SupplyProduct
 from products.models import Product
 from sales.models import Sale, SaleProduct
-from utils import create_employee, create_owner
+from utils import create_employee, create_owner, calculate_price_at_sale
 
 #Fixtures
 @pytest.fixture
@@ -226,10 +226,16 @@ def owner_with_sales(owner_with_supply, test_product_owner):
         discount=20
     )
 
+    price_at_sale = calculate_price_at_sale(
+        test_product_owner.sale_price,
+        sale.discount
+    )
+
     SaleProduct.objects.create(
         sale=sale,
         product=test_product_owner,
-        quantity=2
+        quantity=2,
+        price_at_sale=price_at_sale
     )
 
     sale.apply()
@@ -247,13 +253,64 @@ def employee_with_sales(employee_with_supply, test_product_employee):
         discount=20
     )
 
+    price_at_sale = calculate_price_at_sale(
+        test_product_employee.sale_price,
+        sale.discount
+    )
+
     SaleProduct.objects.create(
         sale=sale,
         product=test_product_employee,
-        quantity=2
+        quantity=2,
+        price_at_sale=price_at_sale
     )
 
     sale.apply()
     test_product_employee.refresh_from_db()
 
     return employee_with_supply
+
+from datetime import date, timedelta
+
+@pytest.fixture
+def owner_with_several_sales(owner_with_storage):
+    """ Create owner with several sales for analytics """
+
+    storage = owner_with_storage.company.storage
+
+    products = [
+        Product.objects.create(
+            title=f'Product {i}',
+            sale_price=100 + i * 10,
+            purchase_price=50 + i * 5,
+            quantity=i + 10,
+            storage=storage
+        )
+        for i in range(1, 7)
+    ]
+
+    sales = []
+    base_date = date(2026,7,3)
+
+    for i in range(6):
+        sale_date = base_date + timedelta(days=i)
+        sale = Sale.objects.create(
+            company=owner_with_storage.company,
+            buyer_name=f'Buyer {i + 1}',
+            sale_date=sale_date,
+            discount=5
+        )
+        sales.append(sale)
+
+        for p in products:
+            price_at_sale = calculate_price_at_sale(p.sale_price, sale.discount)
+            SaleProduct.objects.create(
+                sale=sale,
+                product=p,
+                quantity=p.quantity,
+                price_at_sale=price_at_sale
+            )
+
+    return owner_with_storage
+
+

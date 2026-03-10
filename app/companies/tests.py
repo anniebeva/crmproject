@@ -41,7 +41,7 @@ def test_create_company_employee_error(api_client, employee_user):
 
 @pytest.mark.django_db
 def test_create_company_unauthorized_error(api_client):
-    """Error: unathorized user tries to  create a company"""
+    """Error: unauthorized user tries to  create a company"""
 
     url = reverse('company-create')
     data = {'title': 'FailCompany', 'INN': '444555666777'}
@@ -76,7 +76,7 @@ def test_view_company_employee_success(api_client, employee_user):
 
 @pytest.mark.django_db
 def test_view_company_unauthorized_error(api_client, owner_user):
-    """Error: unathorized user tries to  create a company"""
+    """Error: unauthorized user tries to  create a company"""
 
     url = reverse('company-detail', args=[owner_user.company.id])
     response = api_client.get(url)
@@ -114,7 +114,7 @@ def test_edit_company_employee_error(api_client, employee_user):
 
 @pytest.mark.django_db
 def test_edit_company_unauthorized_error(api_client, owner_user):
-    """Error: unathorized user tries to edit company detail"""
+    """Error: unauthorized user tries to edit company detail"""
 
     url = reverse('company-edit', args=[owner_user.company.id])
     data = {'title': 'FailEdit', 'INN': '111111111113'}
