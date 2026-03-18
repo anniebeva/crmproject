@@ -2,12 +2,13 @@ from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from django.db import transaction
 from decimal import Decimal
+from datetime import date
 
-from .models import Sale, SaleProduct
+from .models import Sale, ProductSale
 from products.models import Product
 from utils import calculate_price_at_sale
 
-class SaleProductSerializer(serializers.Serializer):
+class ProductSaleSerializer(serializers.Serializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
     quantity = serializers.IntegerField(min_value=1)
 
@@ -23,13 +24,13 @@ class SaleProductSerializer(serializers.Serializer):
 
 
 class SaleSerializer(serializers.ModelSerializer):
-    products = SaleProductSerializer(many=True, write_only=True)
+    product_sale = ProductSaleSerializer(many=True, write_only=True)
     products_info = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Sale
         read_only_fields = ['id', 'company']
-        fields = ['id', 'company','buyer_name', 'sale_date', 'discount', 'products', 'products_info']
+        fields = ['id', 'company','buyer_name', 'sale_date', 'discount', 'product_sale', 'products_info']
 
     def __init__(self, *args, **kwargs):
         """Make products not required to enter in case of edit"""
@@ -47,6 +48,15 @@ class SaleSerializer(serializers.ModelSerializer):
             )
 
         return company
+
+    def validate_sale_date(self, value):
+        """Date validation"""
+
+        if value > date.today():
+            raise serializers.ValidationError('Sale date cannot be in the future')
+
+        return value
+
 
     def get_products_info(self, obj):
         """Get information about products in the supply"""
@@ -86,7 +96,7 @@ class SaleSerializer(serializers.ModelSerializer):
 
                 price_at_sale = calculate_price_at_sale(p['product'].sale_price, sale.discount)
 
-                SaleProduct.objects.create(
+                ProductSale.objects.create(
                     sale=sale,
                     product=p['product'],
                     quantity=p['quantity'],
@@ -103,14 +113,13 @@ class SaleSerializer(serializers.ModelSerializer):
 
         instance.buyer_name = validated_data.get('buyer_name', instance.buyer_name)
         instance.sale_date = validated_data.get('sale_date', instance.sale_date)
-        discount = validated_data.get('discount')
 
-        if discount is not None:
-            instance.discount = Decimal(discount)
-            instance.save()
-            instance.recalc_price_at_sale()
+        if 'discount' in validated_data:
+            raise serializers.ValidationError(
+                'Cannot change discount for an existing sale. Delete sale and create a new one.'
+            )
 
-        if 'products' in validated_data:
+        if 'product_sale' in validated_data:
             raise serializers.ValidationError(
                 'Cannot change product\'s details (quantity, price, etc.) in existing sale. Delete sale and create a new one.'
             )

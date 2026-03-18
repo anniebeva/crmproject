@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
+from datetime import date
 
 from .models import Supply, SupplyProduct
 from products.models import Product
@@ -18,6 +19,14 @@ class SupplyProductSerializer(serializers.Serializer):
             )
 
         return product
+
+    def validate_delivery_date(self, value):
+        """Date validation"""
+
+        if value > date.today():
+            raise serializers.ValidationError('Delivery date cannot be in the future')
+
+        return value
 
 
 class SupplySerializer(serializers.ModelSerializer):

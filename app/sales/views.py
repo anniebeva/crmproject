@@ -1,10 +1,10 @@
 from django.db.models import Sum, F
 from rest_framework import generics, permissions
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 from .permissions import SalePermissions
 from .serializers import SaleSerializer, TopProductSalesSerializer, TopProductProfitSerializer, ProfitAnalyticsSerializer
-from .models import Sale, SaleProduct
+from .models import Sale, ProductSale
 
 
 class SaleCreateView(generics.CreateAPIView):
@@ -20,9 +20,23 @@ class SalesListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, SalePermissions]
 
     def get_queryset(self):
-        return Sale.objects.filter(
+        queryset = Sale.objects.filter(
             company=self.request.user.company
         )
+
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        if start_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            queryset = queryset.filter(sale_date__gte=start_date)
+
+        if end_date:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            queryset = queryset.filter(sale_date__gte=end_date)
+
+        return queryset
+
 
 class SaleDetailView(generics.RetrieveAPIView):
     """View sale's detail"""
@@ -66,7 +80,7 @@ class TopProductsSalesView(generics.ListAPIView):
 
     def get_queryset(self):
         return (
-            SaleProduct.objects
+            ProductSale.objects
             .filter(sale__company=self.request.user.company)
             .values('product__id', 'product__title')
             .annotate(total_sales=Sum('quantity'))
@@ -82,7 +96,7 @@ class TopProductsProfitView(generics.ListAPIView):
 
     def get_queryset(self):
         return (
-            SaleProduct.objects
+            ProductSale.objects
             .filter(sale__company=self.request.user.company)
             .values('product__id', 'product__title')
             .annotate(total_profit=Sum(
@@ -98,16 +112,20 @@ class ProfitAnalyticsView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, SalePermissions]
 
     def get_queryset(self):
-        start_date = self.request.quert_params.get('start_date')
+        start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
 
-        queryset = SaleProduct.objects.filter(sale__company=self.request.user.company)
+        queryset = ProductSale.objects.filter(sale__company=self.request.user.company)
 
-        if not start_date:
+        if start_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        else:
             start_date = date.today() - timedelta(days=30)
 
-        if not end_date:
-            end_date =  date.today()
+        if end_date:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        else:
+            end_date = date.today()
 
         queryset = queryset.filter(sale__sale_date__range=[start_date, end_date])
 

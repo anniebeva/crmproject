@@ -32,19 +32,14 @@ class Sale(models.Model):
         self.rollback()
         super().delete(*args, **kwargs)
 
-    def recalc_price_at_sale(self):
-        for sp in self.sales_items.select_related('product').all():
-            sp.price_at_sale = sp.product.sale_price *(Decimal('1') - self.discount / Decimal('100'))
-            sp.save()
-
     def __str__(self):
         return f'Sale #{self.id}, {self.buyer_name}'
 
-class SaleProduct(models.Model):
+class ProductSale(models.Model):
     product = models.ForeignKey(
         'products.Product',
         on_delete=models.CASCADE,
-        related_name='sales_product_items'
+        related_name='product_sale_items'
     )
 
     sale = models.ForeignKey(
