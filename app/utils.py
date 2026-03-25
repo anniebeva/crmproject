@@ -1,3 +1,7 @@
+from rest_framework.exceptions import ValidationError
+from datetime import datetime
+
+
 def create_owner(user_model, comp_model, username, email, company_title, inn):
     """Support function to create company owner with company"""
 
@@ -29,6 +33,11 @@ def calculate_profit(purchase_price, price_at_sale, quantity) -> float:
     return (price_at_sale - purchase_price) * quantity
 
 
+def parse_date(date_str, date_name):
+    """Function to validate and format dates"""
 
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
 
-
+    except ValueError:
+        raise ValidationError(f'{date_name} should be in YYYY-MM-DD format')

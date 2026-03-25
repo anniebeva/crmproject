@@ -1,10 +1,13 @@
+from django.contrib.admindocs.utils import parse_rst
 from django.db.models import Sum, F
+from django.db.models.functions import TruncDate
 from rest_framework import generics, permissions
 from datetime import date, timedelta, datetime
 
 from .permissions import SalePermissions
 from .serializers import SaleSerializer, TopProductSalesSerializer, TopProductProfitSerializer, ProfitAnalyticsSerializer
 from .models import Sale, ProductSale
+from utils import parse_date
 
 
 class SaleCreateView(generics.CreateAPIView):
@@ -28,12 +31,17 @@ class SalesListView(generics.ListAPIView):
         end_date = self.request.query_params.get('end_date')
 
         if start_date:
-            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-            queryset = queryset.filter(sale_date__gte=start_date)
+            start_date = parse_date(start_date, 'start_date')
+        else:
+            start_date = Sale.objects.filter(company=self.request.user.company).order_by(
+                    'sale_date').first().sale_date
 
         if end_date:
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-            queryset = queryset.filter(sale_date__gte=end_date)
+            end_date = parse_date(end_date, 'end_date')
+        else:
+            end_date = date.today()
+
+        queryset = queryset.filter(sale_date__range=[start_date, end_date])
 
         return queryset
 
@@ -87,7 +95,6 @@ class TopProductsSalesView(generics.ListAPIView):
             .order_by('-total_sales')[:5]
         )
 
-
 class TopProductsProfitView(generics.ListAPIView):
     """View list of top 5 products by profit"""
 
@@ -118,12 +125,12 @@ class ProfitAnalyticsView(generics.ListAPIView):
         queryset = ProductSale.objects.filter(sale__company=self.request.user.company)
 
         if start_date:
-            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            start_date = parse_date(start_date, 'start_date')
         else:
-            start_date = date.today() - timedelta(days=30)
+            start_date = date.today() - timedelta(90)
 
         if end_date:
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            end_date = parse_date(end_date, 'end_date')
         else:
             end_date = date.today()
 

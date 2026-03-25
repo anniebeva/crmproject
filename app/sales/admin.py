@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Sale, SaleProduct
+from .models import Sale, ProductSale
 
 class SaleProductInline(admin.TabularInline):
-    model = SaleProduct
+    model = ProductSale
     readonly_fields = ('price_at_sale', 'total_price')
     fields = ('product', 'quantity', 'price_at_sale', 'total_price')
     extra = 0

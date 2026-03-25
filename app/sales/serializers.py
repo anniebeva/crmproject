@@ -24,20 +24,20 @@ class ProductSaleSerializer(serializers.Serializer):
 
 
 class SaleSerializer(serializers.ModelSerializer):
-    product_sale = ProductSaleSerializer(many=True, write_only=True)
+    product_sales = ProductSaleSerializer(many=True, write_only=True)
     products_info = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Sale
         read_only_fields = ['id', 'company']
-        fields = ['id', 'company','buyer_name', 'sale_date', 'discount', 'product_sale', 'products_info']
+        fields = ['id', 'company','buyer_name', 'sale_date', 'discount', 'product_sales', 'products_info']
 
     def __init__(self, *args, **kwargs):
         """Make products not required to enter in case of edit"""
 
         super().__init__(*args, **kwargs)
         if self.instance is not None:
-            self.fields['products'].required = False
+            self.fields['product_sales'].required = False
 
     def validate_company(self, company):
         user = self.context['request'].user
@@ -72,7 +72,7 @@ class SaleSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        product_data = validated_data.pop('products')
+        product_data = validated_data.pop('product_sales')
         user = self.context['request'].user
 
         errors = {}
