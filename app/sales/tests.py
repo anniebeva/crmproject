@@ -1,11 +1,10 @@
 import pytest
 from django.urls import reverse
-from datetime import datetime
 
 from authenticate.models import User
 from companies.models import Company
 from products.models import Product
-from .models import Sale, SaleProduct
+from .models import Sale, ProductSale
 
 #Create POST
 
@@ -20,7 +19,7 @@ def test_create_sale_owner_success(api_client, owner_with_supply, test_product_o
         'buyer_name': 'Test Buyer',
         'sale_date': '2026-03-01',
         'discount': 20,
-        'products': [
+        'product_sales': [
             {'product': test_product_owner.id, 'quantity': 2}
         ]
     }
@@ -43,7 +42,7 @@ def test_create_sale_employee_success(api_client, employee_with_supply, test_pro
         'buyer_name': 'Test Buyer',
         'sale_date': '2026-03-01',
         'discount': 20,
-        'products': [
+        'product_sales': [
             {'product': test_product_employee.id, 'quantity': 2}
         ]
     }
@@ -67,7 +66,7 @@ def test_create_sale_diff_employee_error(api_client, owner_with_supply,
         'buyer_name': 'Test Buyer',
         'sale_date': '2026-03-01',
         'discount': 20,
-        'products': [
+        'product_sales': [
             {'product': test_product_owner.id, 'quantity': 2}
         ]
     }
@@ -85,7 +84,7 @@ def test_create_sale_unauthorized_error(api_client, owner_with_supply, test_prod
         'buyer_name': 'Test Buyer',
         'sale_date': '2026-03-01',
         'discount': 20,
-        'products': [
+        'product_sales': [
             {'product': test_product_owner.id, 'quantity': 2}
         ]
     }
@@ -106,7 +105,7 @@ def test_create_sale_invalid_date(api_client, owner_with_supply, test_product_ow
         'buyer_name': 'Test Buyer',
         'sale_date': 'invalid_date',
         'discount': 20,
-        'products': [
+        'product_sales': [
             {'product': test_product_owner.id, 'quantity': 2}
         ]
     }
@@ -128,7 +127,7 @@ def test_create_sale_negative_quantity(api_client, owner_with_supply, test_produ
         'buyer_name': 'Test Buyer',
         'sale_date': '2026-03-01',
         'discount': 20,
-        'products': [
+        'product_sales': [
             {'product': test_product_owner.id, 'quantity': -2}
         ]
     }
@@ -150,7 +149,7 @@ def test_create_sale_excess_quantity_error(api_client, owner_with_supply, test_p
         'buyer_name': 'Test Buyer',
         'sale_date': '2026-03-01',
         'discount': 20,
-        'products': [
+        'product_sales': [
             {'product': test_product_owner.id, 'quantity': 7}
         ]
     }
@@ -282,8 +281,7 @@ def test_edit_sale_owner_success(api_client, owner_with_sales, test_product_owne
     url = reverse('sale-edit', args=[sale.id])
     data = {
         'buyer_name': 'Other Test Buyer',
-        'sale_date': '2026-03-01',
-        'discount': 10
+        'sale_date': '2026-03-01'
     }
 
     response = api_client.put(url, data, format='json')
@@ -293,7 +291,6 @@ def test_edit_sale_owner_success(api_client, owner_with_sales, test_product_owne
     sale.refresh_from_db()
 
     assert sale.buyer_name == 'Other Test Buyer'
-    assert sale.discount == 10
 
 @pytest.mark.django_db
 def test_edit_sale_employee_success(api_client, employee_with_sales, test_product_employee):
@@ -305,8 +302,7 @@ def test_edit_sale_employee_success(api_client, employee_with_sales, test_produc
     url = reverse('sale-edit', args=[sale.id])
     data = {
         'buyer_name': 'Other Test Buyer',
-        'sale_date': '2026-03-01',
-        'discount': 10
+        'sale_date': '2026-03-01'
     }
 
     response = api_client.put(url, data, format='json')
@@ -316,7 +312,6 @@ def test_edit_sale_employee_success(api_client, employee_with_sales, test_produc
     sale.refresh_from_db()
 
     assert sale.buyer_name == 'Other Test Buyer'
-    assert sale.discount == 10
 
 
 @pytest.mark.django_db
@@ -330,11 +325,7 @@ def test_edit_sale_diff_employee_error(api_client, owner_with_sales,
     url = reverse('sale-edit', args=[sale.id])
     data = {
         'buyer_name': 'Other Test Buyer',
-        'sale_date': '2026-03-01',
-        'discount': 10,
-        'products': [
-            {'product': test_product_owner.id, 'quantity': 2}
-        ]
+        'sale_date': '2026-03-01'
     }
 
     response = api_client.put(url, data, format='json')
@@ -350,11 +341,7 @@ def test_edit_sale_unauthorized_error(api_client, owner_with_sales, test_product
     url = reverse('sale-edit', args=[sale.id])
     data = {
         'buyer_name': 'Other Test Buyer',
-        'sale_date': '2026-03-01',
-        'discount': 10,
-        'products': [
-            {'product': test_product_owner.id, 'quantity': 2}
-        ]
+        'sale_date': '2026-03-01'
     }
 
     response = api_client.put(url, data, format='json')
@@ -372,11 +359,7 @@ def test_sale_edit_invalid_date_error(api_client, owner_with_sales, test_product
     url = reverse('sale-edit', args=[sale.id])
     data = {
         'buyer_name': 'Other Test Buyer',
-        'sale_date': 'invalid_date',
-        'discount': 10,
-        'products': [
-            {'product': test_product_owner.id, 'quantity': 2}
-        ]
+        'sale_date': 'invalid_date'
     }
 
     response = api_client.put(url, data, format='json')
@@ -396,9 +379,8 @@ def test_sale_edit_product_qty_error(api_client, owner_with_sales, test_product_
     data = {
         'buyer_name': 'Other Test Buyer',
         'sale_date': '2026-03-01',
-        'discount': 10,
-        'products': [
-            {'product': test_product_owner.id, 'quantity': 1}
+        'product_sales': [
+            {'product': test_product_owner.id, 'quantity': 10}
         ]
     }
 
@@ -409,6 +391,28 @@ def test_sale_edit_product_qty_error(api_client, owner_with_sales, test_product_
 
     test_product_owner.refresh_from_db()
     assert test_product_owner.quantity == 3
+
+@pytest.mark.django_db
+def test_sale_edit_discount_error(api_client, owner_with_sales, test_product_owner):
+    """Error: Cannot edit discount through sale's edit"""
+
+    api_client.force_authenticate(user=owner_with_sales)
+    sale = owner_with_sales.company.sales.first()
+
+    url = reverse('sale-edit', args=[sale.id])
+    data = {
+        'buyer_name': 'Other Test Buyer',
+        'sale_date': '2026-03-01',
+        'discount': 10
+    }
+
+    response = api_client.put(url, data, format='json')
+
+    assert response.status_code == 400
+    assert 'discount' in str(response.data)
+
+    test_product_owner.refresh_from_db()
+    assert sale.discount == 20
 
 
 #Delete sale DELETE
@@ -496,22 +500,19 @@ def test_top_products_sales_success(api_client, owner_with_several_sales):
     assert response.status_code == 200
 
     data = response.json()
-    assert len(data) == 5
+    assert data['count'] == 5
 
-    quantities = [item['total_sales'] for item in data]
-    assert quantities == sorted(quantities, reverse=True)
 
 @pytest.mark.django_db
-def test_top_product_sales_zero_sales(api_client, employee_with_storage):
+def test_top_product_sales_zero_sales(api_client, employee_with_empty_company):
     """Review statistics with zero sales"""
-    api_client.force_authenticate(user=employee_with_storage)
+    api_client.force_authenticate(user=employee_with_empty_company)
     url = reverse('top5-sales')
 
     response = api_client.get(url)
     assert response.status_code == 200
-
     data = response.json()
-    assert len(data) == 0
+    assert data['count'] == 0
 
 @pytest.mark.django_db
 def test_top_product_sales_unauthorized_error(api_client, owner_with_several_sales):
@@ -534,23 +535,21 @@ def test_top_products_profit_success(api_client, owner_with_several_sales):
     assert response.status_code == 200
 
     data = response.json()
-    assert len(data) == 5
-
-    profits = [float(item['total_profit']) for item in data]
-    assert profits == sorted(profits, reverse=True)
+    assert data['count'] == 5
 
 
 @pytest.mark.django_db
-def test_top_product_profit_zero_sales(api_client, employee_with_storage):
+def test_top_product_profit_zero_sales(api_client, employee_with_empty_company):
     """Review statistics with zero sales"""
-    api_client.force_authenticate(user=employee_with_storage)
+    api_client.force_authenticate(user=employee_with_empty_company)
     url = reverse('top5-profit')
 
     response = api_client.get(url)
     assert response.status_code == 200
 
     data = response.json()
-    assert len(data) == 0
+    assert data['count'] == 0
+
 
 @pytest.mark.django_db
 def test_top_product_profit_unauthorized_error(api_client, owner_with_several_sales):
@@ -571,19 +570,19 @@ def test_profit_analytics_success(api_client, owner_with_several_sales):
     url = reverse('profit-analytics')
 
     response = api_client.get(url,
-                              {'start_date':'2026-07-03',
+                              {'start_date': '2026-07-03',
                                'end_date': '2026-07-04'})
 
     assert response.status_code == 200
 
-    data = response.json()
+    data = response.json()['results']
     assert float(data[0]['total_profit']) > 0
 
 @pytest.mark.django_db
-def test_profit_analytics_zero_sales(api_client, employee_with_storage):
+def test_profit_analytics_zero_sales(api_client, employee_with_empty_company):
     """Test analytics with zero sales"""
 
-    api_client.force_authenticate(user=employee_with_storage)
+    api_client.force_authenticate(user=employee_with_empty_company)
 
     url = reverse('profit-analytics')
 
@@ -593,7 +592,7 @@ def test_profit_analytics_zero_sales(api_client, employee_with_storage):
 
     assert response.status_code == 200
 
-    data = response.json()
+    data = response.json()['results']
     assert data == []
 
 

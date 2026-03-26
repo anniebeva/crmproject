@@ -8,7 +8,7 @@ from storage.models import Storage
 from suppliers.models import Supplier
 from supplies.models import Supply, SupplyProduct
 from products.models import Product
-from sales.models import Sale, SaleProduct
+from sales.models import Sale, ProductSale
 from utils import create_employee, create_owner, calculate_price_at_sale
 
 #Fixtures
@@ -231,7 +231,7 @@ def owner_with_sales(owner_with_supply, test_product_owner):
         sale.discount
     )
 
-    SaleProduct.objects.create(
+    ProductSale.objects.create(
         sale=sale,
         product=test_product_owner,
         quantity=2,
@@ -258,7 +258,7 @@ def employee_with_sales(employee_with_supply, test_product_employee):
         sale.discount
     )
 
-    SaleProduct.objects.create(
+    ProductSale.objects.create(
         sale=sale,
         product=test_product_employee,
         quantity=2,
@@ -286,7 +286,7 @@ def owner_with_several_sales(owner_with_storage):
             quantity=i + 10,
             storage=storage
         )
-        for i in range(1, 7)
+        for i in range(1, 8)
     ]
 
     sales = []
@@ -304,7 +304,7 @@ def owner_with_several_sales(owner_with_storage):
 
         for p in products:
             price_at_sale = calculate_price_at_sale(p.sale_price, sale.discount)
-            SaleProduct.objects.create(
+            ProductSale.objects.create(
                 sale=sale,
                 product=p,
                 quantity=p.quantity,
@@ -312,5 +312,17 @@ def owner_with_several_sales(owner_with_storage):
             )
 
     return owner_with_storage
+
+
+@pytest.fixture
+def employee_with_empty_company(db):
+    empty_user = create_employee(user_model=User,
+                    comp_model=Company,
+                    username='empty_employee',
+                    email='empty_employee@test.com',
+                    company_title='EmptyEmployeeCompany',
+                    inn='1234567891014')
+
+    return empty_user
 
 

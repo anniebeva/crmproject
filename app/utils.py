@@ -1,5 +1,6 @@
 from rest_framework.exceptions import ValidationError
 from datetime import datetime
+from decimal import Decimal
 
 
 def create_owner(user_model, comp_model, username, email, company_title, inn):
@@ -25,7 +26,7 @@ def create_employee(user_model, comp_model, username, email, company_title, inn)
     return user
 
 def calculate_price_at_sale(sale_price, discount):
-    return sale_price * (1 - discount / 100)
+    return sale_price * (Decimal('1') - discount / Decimal('100'))
 
 def calculate_profit(purchase_price, price_at_sale, quantity) -> float:
     """Calculate profit based on prices and discount"""

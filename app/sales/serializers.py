@@ -119,7 +119,7 @@ class SaleSerializer(serializers.ModelSerializer):
                 'Cannot change discount for an existing sale. Delete sale and create a new one.'
             )
 
-        if 'product_sale' in validated_data:
+        if 'product_sales' in validated_data:
             raise serializers.ValidationError(
                 'Cannot change product\'s details (quantity, price, etc.) in existing sale. Delete sale and create a new one.'
             )
