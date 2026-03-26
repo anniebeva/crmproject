@@ -20,9 +20,9 @@ class SupplierListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, SupplierPermission]
 
     def get_queryset(self):
-        return Supplier.objects.filter(
-            company=self.request.user.company
-        )
+        return (Supplier.objects
+        .filter(company=self.request.user.company)
+        .order_by('id'))
 
 
 class SupplierDetailView(generics.RetrieveAPIView):

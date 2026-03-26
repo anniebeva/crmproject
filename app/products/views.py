@@ -21,7 +21,7 @@ class ProductListView(generics.ListAPIView):
     def get_queryset(self):
         return Product.objects.filter(
             storage__company=self.request.user.company
-        )
+        ).order_by('id')
 
 class ProductDetailView(generics.RetrieveAPIView):
     """View Product details"""

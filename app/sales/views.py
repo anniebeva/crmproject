@@ -41,7 +41,9 @@ class SalesListView(generics.ListAPIView):
         else:
             end_date = date.today()
 
-        queryset = queryset.filter(sale_date__range=[start_date, end_date])
+        queryset = (queryset
+                    .filter(sale_date__range=[start_date, end_date])
+                    .order_by('sale_date'))
 
         return queryset
 

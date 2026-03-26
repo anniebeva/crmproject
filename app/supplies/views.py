@@ -19,9 +19,9 @@ class SupplyListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, SupplyPermissions]
 
     def get_queryset(self):
-        return Supply.objects.filter(
-            supplier__company=self.request.user.company
-        )
+        return (Supply.objects
+        .filter(supplier__company=self.request.user.company)
+        .order_by('delivery_date'))
 
 class SupplyDetailView(generics.RetrieveAPIView):
     """Review supply's detail"""
