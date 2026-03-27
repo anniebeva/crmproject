@@ -20,14 +20,6 @@ class SupplyProductSerializer(serializers.Serializer):
 
         return product
 
-    def validate_delivery_date(self, value):
-        """Date validation"""
-
-        if value > date.today():
-            raise serializers.ValidationError('Delivery date cannot be in the future')
-
-        return value
-
 
 class SupplySerializer(serializers.ModelSerializer):
     products = SupplyProductSerializer(many=True, write_only=True)
@@ -47,6 +39,14 @@ class SupplySerializer(serializers.ModelSerializer):
             )
 
         return supplier
+
+    def validate_delivery_date(self, value):
+        """Date validation"""
+
+        if value > date.today():
+            raise serializers.ValidationError('Delivery date cannot be in the future')
+
+        return value
 
     def get_products_info(self, obj):
         """Get information about products in the supply"""

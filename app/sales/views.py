@@ -33,8 +33,7 @@ class SalesListView(generics.ListAPIView):
         if start_date:
             start_date = parse_date(start_date, 'start_date')
         else:
-            start_date = Sale.objects.filter(company=self.request.user.company).order_by(
-                    'sale_date').first().sale_date
+            start_date = date.today() - timedelta(90)
 
         if end_date:
             end_date = parse_date(end_date, 'end_date')
